@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+{% load static %}
+{% load bootstrap5 %}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description"
+          content="In this app, you can chat with LLM models (Gemini or Ollama) with GNNPCSAFT tools, allowing you to ask questions about the PC-SAFT parameters of various compounds, predict thermodynamic properties, and get insights into the GNNPCSAFT's performance.">
+    <meta name="keywords"
+          content="HTML, Django, CSS, GNNPCSAFT, LLM, Chat, Gemini, Ollama">
+    <meta name="author" content="Wildson B B Lima">
+    <link href="{% static 'fontawesomefree/css/fontawesome.css' %}"
+          rel="stylesheet"
+          type="text/css" />
+    <link href="{% static 'fontawesomefree/css/brands.css' %}"
+          rel="stylesheet"
+          type="text/css" />
+    <link href="{% static 'fontawesomefree/css/solid.css' %}"
+          rel="stylesheet"
+          type="text/css">
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'css/chat.css' %}" rel="stylesheet" type="text/css" />
+    {% bootstrap_css %} {% bootstrap_javascript %}
+    <link rel="manifest" href="{% static "/manifest.json" %}">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register("/serviceworker.js")
+            .then(function(registration) {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(function(error) {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
+    <link rel="icon"
+          href="{% static "images/icons/ios/16.png" %}"
+          type="image/png"
+          sizes="16x16">
+    <link rel="apple-touch-icon"
+          href="{% static "images/icons/ios/16.png" %}"
+          type="image/png"
+          sizes="16x16">
+    <title>
+      {% block title %}
+      {% endblock title %}
+    </title>
+  </head>
+  <body class="vh-100">
+    <!-- Sidebar estilo app -->
+    <aside class="sidebar-app">
+      <div>
+        <div class="logo">
+          <img src="{% static 'images/icons/ios/180.png' %}"
+               alt="Logo"
+               width="32"
+               height="32">
+        </div>
+        <nav class="nav flex-column">
+          <a class="nav-link" href="{% url 'chat' %}" title="AI Chat"><i class="fas fa-robot"></i></a>
+          <a class="nav-link" href="{% url 'about' %}" title="About"><i class="fas fa-info-circle"></i></a>
+        </nav>
+      </div>
+      <div class="footer">
+        <a href="https://www.linkedin.com/in/wildsonbbl/"
+           target="_blank"
+           title="Linkedin"><i class="fab fa-linkedin"></i></a>
+        <a href="https://github.com/wildsonbbl" target="_blank" title="Github"><i class="fab fa-github"></i></a>
+        <a href="https://orcid.org/0000-0002-0189-6000"
+           target="_blank"
+           title="ORCID"><i class="fab fa-orcid"></i></a>
+        <div class="copyright">© {{ now|date:"Y" }}</div>
+      </div>
+    </aside>
+    <!-- Conteúdo principal -->
+    <main class="app-content p-3">
+      <div class="row justify-content-center">
+        {% block content %}
+        {% endblock content %}
+      </div>
+    </main>
+  </body>
+</html>

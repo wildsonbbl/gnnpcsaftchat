@@ -1,0 +1,57 @@
+{% extends "master.html" %}
+{% block title %}
+  ABOUT
+{% endblock title %}
+{% block content %}
+  <div class="col-lg">
+    <div class="row">
+      <div class="col-sm text-center">
+        <h3 class="mb-3">
+          <i class="fas fa-flask text-primary"></i> GNNPCSAFT Chat
+        </h3>
+        <div class="alert alert-success mx-auto mb-4">
+          <p class="mb-0">
+            In this app, you can chat with LLMs (Gemini or Ollama) using GNNPCSAFT tools, allowing you to retrieve PC-SAFT parameters for various compounds, predict thermodynamic properties, and gain insights into GNNPCSAFT performance.
+          </p>
+        </div>
+        <div class="mb-4">
+          <span class="badge bg-primary mb-2">Open Source</span>
+          <span class="badge bg-success mb-2">AI-Powered</span>
+          <span class="badge bg-info text-dark mb-2">Cross-Platform</span>
+        </div>
+        <p>
+          <strong>How does it work?</strong>
+          <br>
+          Simply select the GNNPCSAFT tools to make them available to the LLM. When prompted, the LLM will use GNNPCSAFT to estimate pure-component <abbr title="Perturbed Chain Statistical Associating Fluid Theory">PC-SAFT</abbr> parameters for your molecules and calculate thermodynamic properties using the EoS.
+        </p>
+        <p>
+          You can validate the estimated parameters against properties such as density, vapor pressure, enthalpy of vaporization, phase diagrams, VLE, LLE, etc.
+        </p>
+        <div class="alert alert-info mx-auto">
+          <i class="fas fa-lightbulb text-warning"></i>
+          <strong>Tip:</strong> Find <abbr title="SMILES or InChI">molecular identifiers</abbr> at <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem</a> or build your own at <a href="https://bit.ly/DIYmol" target="_blank">DIYmol</a> (right-click the 2D panel to copy SMILES).
+        </div>
+        <div class="mt-4">
+          <a href="https://github.com/wildsonbbl/gnnepcsaft"
+             target="_blank"
+             class="btn btn-dark m-2">
+            <i class="fab fa-github"></i> View GNNPCSAFT project on GitHub
+          </a>
+          <a href="https://sourceforge.net/projects/gnnpcsaftapp/"
+             target="_blank"
+             class="btn btn-primary m-2">
+            <i class="fas fa-download"></i> Download GNNPCSAFT App
+          </a>
+          <a href="https://sourceforge.net/projects/gnnpcsaftchat/"
+             target="_blank"
+             class="btn btn-primary m-2">
+            <i class="fas fa-download"></i> Download GNNPCSAFT Chat
+          </a>
+        </div>
+        <p class="text-muted mt-4">
+          Created with <i class="fas fa-heart text-danger"></i> by Wildson B B Lima.
+        </p>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

@@ -1,0 +1,6 @@
+{
+  "include": ["chat", "manage.py", "app"],
+  "exclude": ["**/app_pkg", "**/.venv", "**/node_modules", "**/out"],
+  "typeCheckingMode": "standard",
+  "reportMissingTypeStubs": "none"
+}
