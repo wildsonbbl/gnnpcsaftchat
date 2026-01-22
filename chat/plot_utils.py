@@ -1,9 +1,11 @@
 "helper for plotting"
 
 import uuid
+from typing import List, Optional
 
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
+    mix_den_feos,
     phase_diagram_feos,
     pure_den_feos,
     pure_h_lv_feos,
@@ -167,6 +169,54 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
     <div id="{plot_id}" alt="Phase diagram plot"></div>
     <script>
     get_phase_diagram({data},0,"Temperature (K)","{plot_id}");
+    </script>
+    </div>
+    """
+
+
+def plot_mix_density(
+    smiles_list: List[str],
+    t_min: float,
+    t_max: float,
+    pressure: float,
+    mole_fractions: List[float],
+    kij_matrix: Optional[List[List[float]]],
+):
+    """
+    When asked, use this tool to show the user a plot of density (mol/m³) for a mixture.
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles_list (List[str]): List of mixture SMILES.
+      t_min (float): minimum temperature (K) to calculate density (mol/m³)
+      t_max (float): maximun temperature (K) to calculate density (mol/m³)
+      pressure (float): system pressure (Pa)
+      mole_fractions (List[float]): mole fractions list
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+
+    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
+    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+
+    densities = [
+        mix_den_feos(
+            parameters=parameters,
+            state=[T, pressure, *mole_fractions],
+            kij_matrix=kij_matrix,
+        )
+        for T in temperatures
+    ]
+
+    data = [[temperatures.tolist(), densities], [[], []]]
+    plot_id = f"den_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
+    <script>
+    getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
     </script>
     </div>
     """
