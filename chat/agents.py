@@ -27,6 +27,7 @@ from google.adk.models.lite_llm import LiteLlm
 
 from .plot_utils import (
     plot_mix_density,
+    plot_mix_vp,
     plot_pure_density,
     plot_pure_h_lv,
     plot_pure_phase_diagram_t_rho,
@@ -64,6 +65,7 @@ all_tools = [
     plot_pure_surface_tension,
     plot_pure_phase_diagram_t_rho,
     plot_mix_density,
+    plot_mix_vp,
 ]
 
 

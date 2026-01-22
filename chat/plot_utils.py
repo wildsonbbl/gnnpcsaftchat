@@ -6,6 +6,7 @@ from typing import List, Optional
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
     mix_den_feos,
+    mix_vp_feos,
     phase_diagram_feos,
     pure_den_feos,
     pure_h_lv_feos,
@@ -217,6 +218,62 @@ def plot_mix_density(
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
     getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
+    </script>
+    </div>
+    """
+
+
+def plot_mix_vp(
+    smiles_list: List[str],
+    t_min: float,
+    t_max: float,
+    mole_fractions: List[float],
+    kij_matrix: Optional[List[List[float]]] = None,
+):
+    """
+    When asked, use this tool to show the user a plot of Vapor Pressure
+    (Bubble/Dew points, Pa) for a mixture.
+    To show the plot, answer the user with the exact content from
+    the result part of this tool and nothing else.
+
+    Args:
+      smiles_list (List[str]): List of mixture SMILES.
+      t_min (float): minimum temperature (K) to calculate Bubble/Dew points (Pa)
+      t_max (float): maximun temperature (K) to calculate Bubble/Dew points (Pa)
+      mole_fractions (List[float]): mole fractions list
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+
+    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
+    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+
+    results = [
+        mix_vp_feos(
+            parameters=parameters,
+            state=[T, 0.0, *mole_fractions],
+            kij_matrix=kij_matrix,
+        )
+        for T in temperatures
+    ]
+    bubble, dew = [list(x) for x in zip(*results)]
+
+    data_bubble = [[temperatures.tolist(), bubble], [[], []]]
+    plot_id = f"bubble_dew_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Bubble/Dew points (Pa)"></div>
+    <script>
+    getplot({data_bubble},0,"Pressure (Pa)","{plot_id}");
+    var trace2 = {{
+              x: {temperatures.tolist()},
+              y: {dew},
+              mode: "lines",
+              type: "scatter",
+              name: "Dew curve",
+            }};
+    Plotly.addTraces("{plot_id}", trace2);
     </script>
     </div>
     """
