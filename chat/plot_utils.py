@@ -180,7 +180,7 @@ def plot_mix_density(
     t_max: float,
     pressure: float,
     mole_fractions: List[float],
-    kij_matrix: Optional[List[List[float]]],
+    kij_matrix: Optional[List[List[float]]] = None,
 ):
     """
     When asked, use this tool to show the user a plot of density (mol/m³) for a mixture.
