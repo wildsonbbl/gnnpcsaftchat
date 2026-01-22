@@ -209,23 +209,19 @@ function get_binary_phase_diagram(temperatures, phase1_x, phase2_x, title, id) {
   );
 }
 
-function get_binary_vle_phase_diagram_xy(vle_phase_diagram_data) {
+function get_binary_vle_phase_diagram_xy(x0, y0, id) {
   var trace1 = {
-    x: vle_phase_diagram_data["x0"],
-    y: vle_phase_diagram_data["y0"],
+    x: x0,
+    y: y0,
     mode: "lines",
     type: "scatter",
     name: "VLE",
   };
-  var pressure_el = document.getElementById("id_pressure");
-  var pressure = pressure_el
-    ? (pressure_el.value || pressure_el.textContent || "").trim()
-    : "";
-  var _Title = "VLE at " + pressure + " Pa";
+
   Plotly.newPlot(
-    "vle_phase_diagram_xy",
+    id,
     [trace1],
-    get_layout(0, "x<sub>1</sub>", "y<sub>1</sub>", _Title),
+    get_layout(0, "x<sub>1</sub>", "y<sub>1</sub>"),
     {
       responsive: true,
       modeBarButtonsToRemove: ["select2d", "lasso2d"],

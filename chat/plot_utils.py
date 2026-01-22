@@ -380,3 +380,47 @@ def plot_binary_vle(
     </script>
     </div>
     """
+
+
+def plot_binary_vle_xy(
+    smiles_list: Tuple[str, str],
+    pressure: float,
+    kij_matrix: Optional[List[List[float]]] = None,
+):
+    """
+    When asked, use this tool to show the user a x-y VLE diagram for a binary mixture
+    at pressure (Pa).
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles_list (Tuple[str, str]): Tuple with binary SMILES.
+      pressure (float): System pressure (Pa)
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+    assert (
+        len(smiles_list) == 2
+    ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
+
+    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+
+    output = mix_vle_diagram_feos(
+        parameters=parameters,
+        state=[pressure],
+        kij_matrix=kij_matrix,
+    )
+
+    plot_id = f"b_vle_xy_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Binary VLE diagram"></div>
+    <script>
+    get_binary_vle_phase_diagram_xy(
+    {output["x0"]},
+    {output["y0"]},
+    "{plot_id}");
+    </script>
+    </div>
+    """
