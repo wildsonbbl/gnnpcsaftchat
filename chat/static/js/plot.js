@@ -108,7 +108,7 @@ function get_phase_diagram(phase_diagram_data, xlegendpos, ytitle, id) {
   });
 }
 
-function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data) {
+function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
   var trace1 = {
     a: ternary_lle_phase_diagram_data["x0"],
     b: ternary_lle_phase_diagram_data["x1"],
@@ -117,15 +117,7 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data) {
     type: "scatterternary",
     name: "Liquid phase 1",
   };
-  var temp_min_el = document.getElementById("id_temp_min");
-  var pressure_el = document.getElementById("id_pressure");
-  var temp_min = temp_min_el
-    ? (temp_min_el.value || temp_min_el.textContent || "").trim()
-    : "";
-  var pressure = pressure_el
-    ? (pressure_el.value || pressure_el.textContent || "").trim()
-    : "";
-  var _ternaryTitle = "LLE at " + temp_min + " K and " + pressure + " Pa";
+
   var trace2 = {
     a: ternary_lle_phase_diagram_data["y0"],
     b: ternary_lle_phase_diagram_data["y1"],
@@ -134,11 +126,12 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data) {
     type: "scatterternary",
     name: "Liquid phase 2",
   };
+
   Plotly.newPlot(
-    "ternary_lle_phase_diagram",
+    id,
     [trace1, trace2],
     {
-      title: _ternaryTitle,
+      title: "Ternary LLE",
       font: {
         family: "Times New Roman",
       },

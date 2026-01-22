@@ -1,12 +1,13 @@
 "helper for plotting"
 
 import uuid
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
     mix_den_feos,
     mix_lle_diagram_feos,
+    mix_lle_feos,
     mix_vle_diagram_feos,
     mix_vp_feos,
     phase_diagram_feos,
@@ -420,6 +421,89 @@ def plot_binary_vle_xy(
     get_binary_vle_phase_diagram_xy(
     {output["x0"]},
     {output["y0"]},
+    "{plot_id}");
+    </script>
+    </div>
+    """
+
+
+def _get_ternary_lle_data(
+    params: List[List[float]],
+    state: List[float],
+    kij_matrix: Optional[List[List[float]]] = None,
+) -> Dict[str, List[float]]:
+    t, p = state  # Temperatura (K) e pressão (Pa)
+
+    def _grid(n_pts: int = 25):
+        xi = np.linspace(1e-5, 0.999, n_pts, dtype=np.float64)
+        x1_m, x2_m = np.meshgrid(xi, xi, indexing="xy")
+        x3_m = 1.0 - x1_m - x2_m
+        return x1_m, x2_m, x3_m, (x3_m >= 0.0)
+
+    def _collect_tie_lines(x1_m, x2_m, x3_m, mask):
+        valid_idx = np.argwhere(mask)
+        ternary_data = {"x0": [], "x1": [], "x2": [], "y0": [], "y1": [], "y2": []}
+        for i, j in valid_idx:
+            try:
+                lle = mix_lle_feos(
+                    params,
+                    [t, p, x1_m[i, j].item(), x2_m[i, j].item(), x3_m[i, j].item()],
+                    kij_matrix,
+                )
+            except (RuntimeError, ValueError):
+                continue
+            # For LLE, y is one phase and x is the other phase
+            ternary_data["x0"].extend(lle["x0"])
+            ternary_data["x1"].extend(lle["x1"])
+            ternary_data["x2"].extend(lle["x2"])
+            ternary_data["y0"].extend(lle["y0"])
+            ternary_data["y1"].extend(lle["y1"])
+            ternary_data["y2"].extend(lle["y2"])
+        return ternary_data
+
+    x1, x2, x3, mask = _grid()
+    return _collect_tie_lines(x1, x2, x3, mask)
+
+
+def plot_ternary_lle(
+    smiles_list: Tuple[str, str, str],
+    temperature: float,
+    pressure: float,
+    kij_matrix: Optional[List[List[float]]] = None,
+):
+    """
+    When asked, use this tool to show the user a LLE diagram for a ternary mixture
+    at temperature (K) and pressure (Pa).
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles_list (Tuple[str, str, str]): Tuple with ternary SMILES.
+      temperature (float): System temperature (K)
+      pressure (float): System pressure (Pa)
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+    assert (
+        len(smiles_list) == 3
+    ), f"smiles_list should have 3 SMILES, got {len(smiles_list)} instead"
+
+    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+
+    output = _get_ternary_lle_data(
+        params=parameters,
+        state=[temperature, pressure],
+        kij_matrix=kij_matrix,
+    )
+
+    plot_id = f"t_lle_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Ternary LLE diagram"></div>
+    <script>
+    get_ternary_lle_phase_diagram(
+    {output},
     "{plot_id}");
     </script>
     </div>

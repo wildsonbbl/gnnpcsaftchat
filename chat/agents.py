@@ -36,6 +36,7 @@ from .plot_utils import (
     plot_pure_phase_diagram_t_rho,
     plot_pure_surface_tension,
     plot_pure_vapor_pressure,
+    plot_ternary_lle,
 )
 
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "False"
@@ -72,6 +73,7 @@ all_tools = [
     plot_binary_lle,
     plot_binary_vle,
     plot_binary_vle_xy,
+    plot_ternary_lle,
 ]
 
 
