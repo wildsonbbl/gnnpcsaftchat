@@ -25,7 +25,12 @@ from gnnepcsaft_mcp_server.utils import (
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 
-from .plot_utils import plot_pure_density, plot_pure_h_lv, plot_pure_vapor_pressure
+from .plot_utils import (
+    plot_pure_density,
+    plot_pure_h_lv,
+    plot_pure_surface_tension,
+    plot_pure_vapor_pressure,
+)
 
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "False"
 
@@ -54,6 +59,7 @@ all_tools = [
     plot_pure_density,
     plot_pure_vapor_pressure,
     plot_pure_h_lv,
+    plot_pure_surface_tension,
 ]
 
 
