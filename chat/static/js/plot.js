@@ -182,35 +182,26 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data) {
   );
 }
 
-function get_binary_lle_phase_diagram(binary_lle_phase_diagram_data) {
+function get_binary_lle_phase_diagram(temperatures, phase1_x, phase2_x, id) {
   var trace1 = {
-    x: binary_lle_phase_diagram_data["x0"],
-    y: binary_lle_phase_diagram_data["temperature"],
+    x: phase1_x,
+    y: temperatures,
     mode: "lines",
     type: "scatter",
     name: "Liquid phase 1",
   };
   var trace2 = {
-    x: binary_lle_phase_diagram_data["y0"],
-    y: binary_lle_phase_diagram_data["temperature"],
+    x: phase2_x,
+    y: temperatures,
     mode: "lines",
     type: "scatter",
     name: "Liquid phase 2",
   };
 
-  var pressure_el = document.getElementById("id_pressure");
-  var temp_min_el = document.getElementById("id_temp_min");
-  var pressure = pressure_el
-    ? (pressure_el.value || pressure_el.textContent || "").trim()
-    : "";
-  var temp_min = temp_min_el
-    ? (temp_min_el.value || temp_min_el.textContent || "").trim()
-    : "";
-  var _Title = "LLE at " + pressure + " Pa, starting at " + temp_min + " K";
   Plotly.newPlot(
-    "binary_lle_phase_diagram",
+    id,
     [trace1, trace2],
-    get_layout(0, "x<sub>1</sub>", "Temperature (K)", _Title),
+    get_layout(0, "x<sub>1</sub>", "Temperature (K)", "T-x-x"),
     {
       responsive: true,
       modeBarButtonsToRemove: ["select2d", "lasso2d"],

@@ -26,6 +26,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 
 from .plot_utils import (
+    plot_binary_lle,
     plot_mix_density,
     plot_mix_vp,
     plot_pure_density,
@@ -66,6 +67,7 @@ all_tools = [
     plot_pure_phase_diagram_t_rho,
     plot_mix_density,
     plot_mix_vp,
+    plot_binary_lle,
 ]
 
 

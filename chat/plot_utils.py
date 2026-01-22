@@ -1,11 +1,12 @@
 "helper for plotting"
 
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
     mix_den_feos,
+    mix_lle_diagram_feos,
     mix_vp_feos,
     phase_diagram_feos,
     pure_den_feos,
@@ -274,6 +275,59 @@ def plot_mix_vp(
               name: "Dew curve",
             }};
     Plotly.addTraces("{plot_id}", trace2);
+    </script>
+    </div>
+    """
+
+
+def plot_binary_lle(
+    smiles_list: Tuple[str, str],
+    t_min: float,
+    pressure: float,
+    mole_fractions: List[float],
+    kij_matrix: Optional[List[List[float]]] = None,
+):
+    """
+    When asked, use this tool to show the user a T-x-x LLE diagram for a binary mixture
+    from t_min to t_min + 50 K.
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles_list (Tuple[str, str]): Tuple with binary SMILES.
+      t_min (float): Minimum temperature (K) to calculate LLE diagram
+      pressure (float): System pressure (Pa)
+      mole_fractions (List[float]): Mole fractions list
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+    assert (
+        len(smiles_list) == 2
+    ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
+
+    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+
+    output = mix_lle_diagram_feos(
+        parameters=parameters,
+        state=[
+            t_min,
+            pressure,
+            *mole_fractions,
+        ],
+        kij_matrix=kij_matrix,
+    )
+
+    plot_id = f"b_lle_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Binary LLE diagram"></div>
+    <script>
+    get_binary_lle_phase_diagram(
+    {output["temperature"]},
+    {output["x0"]},
+    {output["y0"]},
+    "{plot_id}");
     </script>
     </div>
     """
