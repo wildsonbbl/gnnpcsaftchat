@@ -7,6 +7,7 @@ import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
     mix_den_feos,
     mix_lle_diagram_feos,
+    mix_vle_diagram_feos,
     mix_vp_feos,
     phase_diagram_feos,
     pure_den_feos,
@@ -289,7 +290,8 @@ def plot_binary_lle(
 ):
     """
     When asked, use this tool to show the user a T-x-x LLE diagram for a binary mixture
-    from t_min to t_min + 50 K.
+    from t_min to t_min + 50 K at pressure (Pa). Mole fractions are used as starting value,
+    so it needs to be within the two phase region.
     To show the plot, answer the user with the exact content from
     the result part of this tool.
 
@@ -323,10 +325,57 @@ def plot_binary_lle(
     <div class="col-lg">
     <div id="{plot_id}" alt="Binary LLE diagram"></div>
     <script>
-    get_binary_lle_phase_diagram(
+    get_binary_phase_diagram(
     {output["temperature"]},
     {output["x0"]},
     {output["y0"]},
+    "T-x-x",
+    "{plot_id}");
+    </script>
+    </div>
+    """
+
+
+def plot_binary_vle(
+    smiles_list: Tuple[str, str],
+    pressure: float,
+    kij_matrix: Optional[List[List[float]]] = None,
+):
+    """
+    When asked, use this tool to show the user a T-x-y VLE diagram for a binary mixture
+    at pressure (Pa).
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles_list (Tuple[str, str]): Tuple with binary SMILES.
+      pressure (float): System pressure (Pa)
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+    assert (
+        len(smiles_list) == 2
+    ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
+
+    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+
+    output = mix_vle_diagram_feos(
+        parameters=parameters,
+        state=[pressure],
+        kij_matrix=kij_matrix,
+    )
+
+    plot_id = f"b_vle_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Binary VLE diagram"></div>
+    <script>
+    get_binary_phase_diagram(
+    {output["temperature"]},
+    {output["x0"]},
+    {output["y0"]},
+    "T-x-y",
     "{plot_id}");
     </script>
     </div>

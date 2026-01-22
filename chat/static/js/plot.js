@@ -182,57 +182,26 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data) {
   );
 }
 
-function get_binary_lle_phase_diagram(temperatures, phase1_x, phase2_x, id) {
+function get_binary_phase_diagram(temperatures, phase1_x, phase2_x, title, id) {
   var trace1 = {
     x: phase1_x,
     y: temperatures,
     mode: "lines",
     type: "scatter",
-    name: "Liquid phase 1",
+    name: "Phase 1",
   };
   var trace2 = {
     x: phase2_x,
     y: temperatures,
     mode: "lines",
     type: "scatter",
-    name: "Liquid phase 2",
+    name: "Phase 2",
   };
 
   Plotly.newPlot(
     id,
     [trace1, trace2],
-    get_layout(0, "x<sub>1</sub>", "Temperature (K)", "T-x-x"),
-    {
-      responsive: true,
-      modeBarButtonsToRemove: ["select2d", "lasso2d"],
-    },
-  );
-}
-
-function get_binary_vle_phase_diagram_txy(vle_phase_diagram_data) {
-  var trace1 = {
-    x: vle_phase_diagram_data["x0"],
-    y: vle_phase_diagram_data["temperature"],
-    mode: "lines",
-    type: "scatter",
-    name: "Liquid phase",
-  };
-  var trace2 = {
-    x: vle_phase_diagram_data["y0"],
-    y: vle_phase_diagram_data["temperature"],
-    mode: "lines",
-    type: "scatter",
-    name: "Vapor phase",
-  };
-  var pressure_el = document.getElementById("id_pressure");
-  var pressure = pressure_el
-    ? (pressure_el.value || pressure_el.textContent || "").trim()
-    : "";
-  var _Title = "VLE at " + pressure + " Pa";
-  Plotly.newPlot(
-    "vle_phase_diagram_txy",
-    [trace1, trace2],
-    get_layout(0, "x<sub>1</sub>", "Temperature (K)", _Title),
+    get_layout(0, "x<sub>1</sub>", "Temperature (K)", title),
     {
       responsive: true,
       modeBarButtonsToRemove: ["select2d", "lasso2d"],
