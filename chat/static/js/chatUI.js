@@ -128,6 +128,17 @@ function updateChatLog() {
     }
     messageText.innerHTML += msg.msg; // Append the text message
 
+    // Execute scripts inserted via innerHTML
+    const scripts = messageText.getElementsByTagName("script");
+    Array.from(scripts).forEach((oldScript) => {
+      const newScript = document.createElement("script");
+      Array.from(oldScript.attributes).forEach((attr) =>
+        newScript.setAttribute(attr.name, attr.value)
+      );
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+
     const links = messageText.getElementsByTagName("a");
     for (let i = 0; i < links.length; i++) {
       links[i].setAttribute("target", "_blank");

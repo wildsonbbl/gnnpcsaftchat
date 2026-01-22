@@ -1,5 +1,7 @@
 "helper for plotting"
 
+import uuid
+
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import pure_den_feos
 from gnnepcsaft_mcp_server.utils import predict_epcsaft_parameters
@@ -8,7 +10,8 @@ from gnnepcsaft_mcp_server.utils import predict_epcsaft_parameters
 def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     """
     When asked, use this tool to show the user a plot of density.
-    Answer the user with the exact result of this tool to show the plot.
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -26,11 +29,11 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     ]
 
     data = [[temperatures.tolist(), densities], [[], []]]
+    plot_id = f"den_plot_{uuid.uuid4().hex}"
 
     return f"""
-<div id="den_plot" alt="Density plot"></div>
+<div id="{plot_id}" alt="Density plot"></div>
 <script>
-var rho_data = {data};
-getplot(rho_data,0,"Liquid Density (mol/m³)","den_plot");
+getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
 </script>
 """
