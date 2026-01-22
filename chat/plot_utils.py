@@ -32,8 +32,10 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     plot_id = f"den_plot_{uuid.uuid4().hex}"
 
     return f"""
-<div id="{plot_id}" alt="Density plot"></div>
-<script>
-getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
-</script>
-"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Density plot"></div>
+    <script>
+    getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
+    </script>
+    </div>
+    """
