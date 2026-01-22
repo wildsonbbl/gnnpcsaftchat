@@ -82,17 +82,17 @@ function getplot(data, xlegendpos, ytitle, id, trace_name = "GNN") {
   });
 }
 
-function get_phase_diagram(phase_diagram_data, xlegendpos, ytitle, y_pos, id) {
+function get_phase_diagram(phase_diagram_data, xlegendpos, ytitle, id) {
   var trace1 = {
-    y: phase_diagram_data[y_pos],
-    x: phase_diagram_data[2],
+    y: phase_diagram_data[0],
+    x: phase_diagram_data[1],
     mode: "lines",
     type: "scatter",
     name: "Liquid",
   };
   var trace2 = {
-    y: phase_diagram_data[y_pos],
-    x: phase_diagram_data[3],
+    y: phase_diagram_data[0],
+    x: phase_diagram_data[2],
     mode: "lines",
     type: "scatter",
     name: "Vapor",

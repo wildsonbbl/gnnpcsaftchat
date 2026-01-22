@@ -4,6 +4,7 @@ import uuid
 
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
+    phase_diagram_feos,
     pure_den_feos,
     pure_h_lv_feos,
     pure_surface_tension_feos,
@@ -135,6 +136,37 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
     <div id="{plot_id}" alt="Surface Tension (mN/m) plot"></div>
     <script>
     getplot({data},0,"Surface Tension (mN/m)","{plot_id}");
+    </script>
+    </div>
+    """
+
+
+def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
+    """
+    When asked, use this tool to show the user a pure-component
+    temperature (K) vs density (mol/m³) phase diagram
+    from t_min up to the critical temperature.
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles (str): SMILES of the molecule.
+      t_min (float): minimum temperature (K) to calculate phase diagram
+
+    """
+
+    parameters = predict_epcsaft_parameters(smiles)
+
+    output = phase_diagram_feos(parameters=parameters, state=[t_min])
+
+    data = [output["temperature"], output["density liquid"], output["density vapor"]]
+    plot_id = f"t_rho_diagram_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="Phase diagram plot"></div>
+    <script>
+    get_phase_diagram({data},0,"Temperature (K)","{plot_id}");
     </script>
     </div>
     """
