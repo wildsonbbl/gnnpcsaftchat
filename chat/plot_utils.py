@@ -1,7 +1,7 @@
 "helper for plotting"
 
 import uuid
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import numpy as np
 from gnnepcsaft.epcsaft.epcsaft_feos import (
@@ -284,7 +284,7 @@ def plot_mix_vp(
 
 
 def plot_binary_lle(
-    smiles_list: Tuple[str, str],
+    smiles_list: List[str],
     t_min: float,
     pressure: float,
     mole_fractions: List[float],
@@ -298,7 +298,7 @@ def plot_binary_lle(
     the result part of this tool.
 
     Args:
-      smiles_list (Tuple[str, str]): Tuple with binary SMILES.
+      smiles_list (List[str]): List with binary SMILES.
       t_min (float): Minimum temperature (K) to calculate LLE diagram
       pressure (float): System pressure (Pa)
       mole_fractions (List[float]): Mole fractions list
@@ -339,7 +339,7 @@ def plot_binary_lle(
 
 
 def plot_binary_vle(
-    smiles_list: Tuple[str, str],
+    smiles_list: List[str],
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
 ):
@@ -350,7 +350,7 @@ def plot_binary_vle(
     the result part of this tool.
 
     Args:
-      smiles_list (Tuple[str, str]): Tuple with binary SMILES.
+      smiles_list (List[str]): List with binary SMILES.
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
@@ -385,7 +385,7 @@ def plot_binary_vle(
 
 
 def plot_binary_vle_xy(
-    smiles_list: Tuple[str, str],
+    smiles_list: List[str],
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
 ):
@@ -396,7 +396,7 @@ def plot_binary_vle_xy(
     the result part of this tool.
 
     Args:
-      smiles_list (Tuple[str, str]): Tuple with binary SMILES.
+      smiles_list (List[str]): List with binary SMILES.
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
@@ -467,7 +467,7 @@ def _get_ternary_lle_data(
 
 
 def plot_ternary_lle(
-    smiles_list: Tuple[str, str, str],
+    smiles_list: List[str],
     temperature: float,
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
@@ -479,7 +479,7 @@ def plot_ternary_lle(
     the result part of this tool.
 
     Args:
-      smiles_list (Tuple[str, str, str]): Tuple with ternary SMILES.
+      smiles_list (List[str]): List with ternary SMILES.
       temperature (float): System temperature (K)
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
