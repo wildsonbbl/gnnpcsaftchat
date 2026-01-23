@@ -45,12 +45,10 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     plot_id = f"den_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
     getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -78,12 +76,10 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
     plot_id = f"vp_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Vapor pressure (Pa) plot"></div>
     <script>
     getplot({data},0,"Vapor Pressure (Pa)","{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -109,12 +105,10 @@ def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
     plot_id = f"h_lv_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Enthalpy of vaporization (kJ/mol) plot"></div>
     <script>
     getplot({data},0,"Enthalpy of vaporization (kJ/mol)","{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -139,12 +133,10 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
     plot_id = f"st_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Surface Tension (mN/m) plot"></div>
     <script>
     getplot({data},0,"Surface Tension (mN/m)","{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -170,12 +162,10 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
     plot_id = f"t_rho_diagram_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Phase diagram plot"></div>
     <script>
     get_phase_diagram({data},0,"Temperature (K)","{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -218,12 +208,10 @@ def plot_mix_density(
     plot_id = f"den_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
     getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -266,7 +254,6 @@ def plot_mix_vp(
     plot_id = f"bubble_dew_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Bubble/Dew points (Pa)"></div>
     <script>
     getplot({data_bubble},0,"Pressure (Pa)","{plot_id}");
@@ -279,7 +266,6 @@ def plot_mix_vp(
             }};
     Plotly.addTraces("{plot_id}", trace2);
     </script>
-    </div>
     """
 
 
@@ -324,7 +310,6 @@ def plot_binary_lle(
     plot_id = f"b_lle_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Binary LLE diagram"></div>
     <script>
     get_binary_phase_diagram(
@@ -334,7 +319,6 @@ def plot_binary_lle(
     "T-x-x",
     "{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -370,7 +354,6 @@ def plot_binary_vle(
     plot_id = f"b_vle_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Binary VLE diagram"></div>
     <script>
     get_binary_phase_diagram(
@@ -380,7 +363,6 @@ def plot_binary_vle(
     "T-x-y",
     "{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -416,7 +398,6 @@ def plot_binary_vle_xy(
     plot_id = f"b_vle_xy_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Binary VLE diagram"></div>
     <script>
     get_binary_vle_phase_diagram_xy(
@@ -424,7 +405,6 @@ def plot_binary_vle_xy(
     {output["y0"]},
     "{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -500,14 +480,12 @@ def plot_ternary_lle(
     plot_id = f"t_lle_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="Ternary LLE diagram"></div>
     <script>
     get_ternary_lle_phase_diagram(
     {output},
     "{plot_id}");
     </script>
-    </div>
     """
 
 
@@ -526,11 +504,9 @@ def plot_3d_molecule(smiles: str):
     plot_id = f"3d_mol_plot_{uuid.uuid4().hex}"
 
     return f"""
-    <div class="col-lg">
     <div id="{plot_id}" alt="3D molecule" class="molplot-style"></div>
     <script>
     var mol = "{mol}";
     loadmol(mol, "{plot_id}");
     </script>
-    </div>
     """
