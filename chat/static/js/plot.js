@@ -131,7 +131,7 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
     id,
     [trace1, trace2],
     {
-      title: "Ternary LLE",
+      title: "",
       font: {
         family: "Times New Roman",
       },
