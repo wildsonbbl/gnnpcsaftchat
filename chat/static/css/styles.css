@@ -1,8 +1,9 @@
 /* Add your custom styles here */
 
 .molplot-style {
-  width: 300px;
-  height: 250px;
+  width: 100%;
+  min-width: 300px;
+  height: 300px;
   position: relative;
 }
 
