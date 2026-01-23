@@ -4,7 +4,6 @@ import os
 import textwrap
 from typing import List, Optional
 
-from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
 from gnnepcsaft_mcp_server.utils import (
     batch_convert_pure_density_to_kg_per_m3,
     batch_critical_points,
@@ -26,6 +25,7 @@ from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 
 from .plot_utils import (
+    plot_3d_molecule,
     plot_binary_lle,
     plot_binary_vle,
     plot_binary_vle_xy,
@@ -62,7 +62,6 @@ all_tools = [
     mixture_vapor_pressure,
     pubchem_description,
     pure_phase,
-    v3000_mol_block,
     plot_pure_density,
     plot_pure_vapor_pressure,
     plot_pure_h_lv,
@@ -74,6 +73,7 @@ all_tools = [
     plot_binary_vle,
     plot_binary_vle_xy,
     plot_ternary_lle,
+    plot_3d_molecule,
 ]
 
 

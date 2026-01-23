@@ -16,6 +16,7 @@ from gnnepcsaft.epcsaft.epcsaft_feos import (
     pure_surface_tension_feos,
     pure_vp_feos,
 )
+from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
 from gnnepcsaft_mcp_server.utils import predict_epcsaft_parameters
 
 
@@ -505,6 +506,31 @@ def plot_ternary_lle(
     get_ternary_lle_phase_diagram(
     {output},
     "{plot_id}");
+    </script>
+    </div>
+    """
+
+
+def plot_3d_molecule(smiles: str):
+    """
+    When asked, use this tool to show the user a 3D molecule.
+    To show the plot, answer the user with the exact content from
+    the result part of this tool.
+
+    Args:
+      smiles (str): SMILES of the molecule.
+
+    """
+
+    mol = v3000_mol_block(smiles=smiles).replace("\n", "\\n")
+    plot_id = f"3d_mol_plot_{uuid.uuid4().hex}"
+
+    return f"""
+    <div class="col-lg">
+    <div id="{plot_id}" alt="3D molecule" class="molplot-style"></div>
+    <script>
+    var mol = "{mol}";
+    loadmol(mol, "{plot_id}");
     </script>
     </div>
     """
