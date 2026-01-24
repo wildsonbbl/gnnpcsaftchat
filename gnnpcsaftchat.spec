@@ -2,7 +2,6 @@
 from PyInstaller.utils.hooks import copy_metadata
 
 datas = [
-    ("./icons.json", "."),
     ("./chat/templates", "./chat/templates"),
     ("./productionfiles", "./productionfiles"),
 ]
