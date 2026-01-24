@@ -4,7 +4,7 @@ import uuid
 from typing import Dict, List, Optional
 
 import numpy as np
-from gnnepcsaft.epcsaft.epcsaft_feos import (
+from gnnepcsaft.pcsaft.pcsaft_feos import (
     mix_den_feos,
     mix_lle_diagram_feos,
     mix_lle_feos,
@@ -17,7 +17,7 @@ from gnnepcsaft.epcsaft.epcsaft_feos import (
     pure_vp_feos,
 )
 from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
-from gnnepcsaft_mcp_server.utils import predict_epcsaft_parameters
+from gnnepcsaft_mcp_server.utils import predict_pcsaft_parameters
 
 
 def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
@@ -35,7 +35,7 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     """
 
     temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = predict_epcsaft_parameters(smiles)
+    parameters = predict_pcsaft_parameters(smiles)
 
     densities = [
         pure_den_feos(parameters=parameters, state=[T, pressure]) for T in temperatures
@@ -66,7 +66,7 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
     """
 
     temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = predict_epcsaft_parameters(smiles)
+    parameters = predict_pcsaft_parameters(smiles)
 
     vapor_pressures = [
         pure_vp_feos(parameters=parameters, state=[T]) for T in temperatures
@@ -97,7 +97,7 @@ def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
     """
 
     temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = predict_epcsaft_parameters(smiles)
+    parameters = predict_pcsaft_parameters(smiles)
 
     h_lv = [pure_h_lv_feos(parameters=parameters, state=[T]) for T in temperatures]
 
@@ -125,7 +125,7 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
 
     """
 
-    parameters = predict_epcsaft_parameters(smiles)
+    parameters = predict_pcsaft_parameters(smiles)
 
     st, temperatures = pure_surface_tension_feos(parameters=parameters, state=[t_min])
 
@@ -154,7 +154,7 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
 
     """
 
-    parameters = predict_epcsaft_parameters(smiles)
+    parameters = predict_pcsaft_parameters(smiles)
 
     output = phase_diagram_feos(parameters=parameters, state=[t_min])
 
@@ -193,7 +193,7 @@ def plot_mix_density(
     """
 
     temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
 
     densities = [
         mix_den_feos(
@@ -238,7 +238,7 @@ def plot_mix_vp(
     """
 
     temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
 
     results = [
         mix_vp_feos(
@@ -295,7 +295,7 @@ def plot_binary_lle(
         len(smiles_list) == 2
     ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
 
     output = mix_lle_diagram_feos(
         parameters=parameters,
@@ -343,7 +343,7 @@ def plot_binary_vle(
         len(smiles_list) == 2
     ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
 
     output = mix_vle_diagram_feos(
         parameters=parameters,
@@ -387,7 +387,7 @@ def plot_binary_vle_xy(
         len(smiles_list) == 2
     ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
 
     output = mix_vle_diagram_feos(
         parameters=parameters,
@@ -469,7 +469,7 @@ def plot_ternary_lle(
         len(smiles_list) == 3
     ), f"smiles_list should have 3 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_epcsaft_parameters(smiles) for smiles in smiles_list]
+    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
 
     output = _get_ternary_lle_data(
         params=parameters,

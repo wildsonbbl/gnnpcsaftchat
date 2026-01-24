@@ -5,21 +5,16 @@ import textwrap
 from typing import List, Optional
 
 from gnnepcsaft_mcp_server.utils import (
-    batch_convert_pure_density_to_kg_per_m3,
     batch_critical_points,
     batch_inchi_to_smiles,
     batch_molecular_weights,
-    batch_pa_to_bar,
-    batch_predict_epcsaft_parameters,
+    batch_predict_pcsaft_parameters,
     batch_pure_density,
     batch_pure_h_lv,
     batch_pure_vapor_pressure,
     batch_smiles_to_inchi,
     mixture_density,
-    mixture_phase,
     mixture_vapor_pressure,
-    pubchem_description,
-    pure_phase,
 )
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
@@ -47,21 +42,8 @@ DEFAULT_MODEL = "gemini-3-flash-preview"
 
 
 all_tools = [
-    batch_convert_pure_density_to_kg_per_m3,
+    batch_predict_pcsaft_parameters,
     batch_critical_points,
-    batch_inchi_to_smiles,
-    batch_molecular_weights,
-    batch_pa_to_bar,
-    batch_predict_epcsaft_parameters,
-    batch_pure_density,
-    batch_pure_h_lv,
-    batch_pure_vapor_pressure,
-    batch_smiles_to_inchi,
-    mixture_density,
-    mixture_phase,
-    mixture_vapor_pressure,
-    pubchem_description,
-    pure_phase,
     plot_pure_density,
     plot_pure_vapor_pressure,
     plot_pure_h_lv,
@@ -74,6 +56,14 @@ all_tools = [
     plot_binary_vle_xy,
     plot_ternary_lle,
     plot_3d_molecule,
+    batch_inchi_to_smiles,
+    batch_smiles_to_inchi,
+    batch_molecular_weights,
+    batch_pure_density,
+    batch_pure_h_lv,
+    batch_pure_vapor_pressure,
+    mixture_density,
+    mixture_vapor_pressure,
 ]
 
 
