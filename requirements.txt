@@ -29,3 +29,4 @@ langgraph
 google-adk==1.12.0
 litellm>=1.68.1
 djlint
+pyinstaller

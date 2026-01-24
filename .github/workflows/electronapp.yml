@@ -1,0 +1,53 @@
+name: Publish Electron App to GitHub Releases
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    strategy:
+      matrix:
+        runs-on: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.runs-on }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: uv pip install -r requirements.txt
+      - name: Check versions
+        run: |
+          npm install -g npm@11.1.0
+          node -v
+          npm -v
+          python --version
+          pyinstaller --version
+      - name: Package App with PyInstaller
+        run: |
+          python manage.py collectstatic --no-input
+          python manage.py migrate --no-input
+          pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean gnnpcsaftchat.spec
+
+      - name: Check pyinstaller file
+        run: ./app_pkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
+      - name: Build and Publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd electron
+          npm install
+          npm run publish
