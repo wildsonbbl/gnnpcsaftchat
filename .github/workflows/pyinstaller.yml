@@ -34,6 +34,6 @@ jobs:
           python manage.py migrate --no-input
           pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean gnnpcsaftchat.spec
       - name: Check pyinstaller file
-        run: ./apppkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
+        run: ./app_pkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
       - name: Check files
         run: ls -l ./app_pkg/dist/gnnpcsaftchat
