@@ -169,7 +169,7 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
     """
 
 
-def plot_mix_density(
+def plot_mix_density(  # pylint: disable=R0913,R0917
     smiles_list: List[str],
     t_min: float,
     t_max: float,
