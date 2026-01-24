@@ -1,6 +1,7 @@
 "helper functions for agents"
 
 import json
+import os
 from typing import Dict, List
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
@@ -30,7 +31,7 @@ def get_gemini_models() -> Dict[str, List[str]]:
 
 def get_ollama_models() -> Dict[str, List[Dict[str, str]]]:
     "get full list of ollama models"
-    url = "http://localhost:11434/api/tags"
+    url = os.environ["OLLAMA_API_BASE"] + "/api/tags"
     try:
         with urlopen(url) as ans:
             ans = ans.read().decode("utf8").rstrip()
@@ -54,7 +55,7 @@ def is_api_key_valid(api_key: str) -> bool:
 
 def is_ollama_online() -> bool:
     "Check if the Ollama server is online."
-    url = "http://localhost:11434/api/tags"
+    url = os.environ["OLLAMA_API_BASE"] + "/api/tags"
     try:
         with urlopen(url) as ans:
             ans = ans.read().decode("utf8").rstrip()
