@@ -4,9 +4,9 @@ The GNNPCSAFT Chat is an implementation of [our project](https://github.com/wild
 
 In this app, you can chat with LLM models (Gemini or Ollama) with GNNPCSAFT tools, allowing you to ask questions about the PC-SAFT parameters of various compounds, predict thermodynamic properties, and get insights into the GNNPCSAFT's performance.
 
-You can usually find an app for the project at [SourceForge](https://sourceforge.net/projects/gnnpcsaft/). For this app, it will be available on releases too.
+You can usually find an app for the project at [SourceForge](https://sourceforge.net/projects/gnnpcsaftapp/). For this app, it will be available on releases too.
 
-A CLI to use a model can be found at [GNNePCSAFT CLI](https://github.com/wildsonbbl/gnnepcsaftcli) and installed with [pipx](https://github.com/pypa/pipx):
+A CLI to use a model can be found at [GNNPCSAFT CLI](https://github.com/wildsonbbl/gnnepcsaftcli) and installed with [pipx](https://github.com/pypa/pipx):
 
 ```bash
 pipx install gnnepcsaftcli
