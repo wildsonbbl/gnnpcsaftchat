@@ -1,16 +1,19 @@
-name: Publish Electron App to GitHub Releases
+name: PyInstaller check test
 
 on:
   workflow_dispatch:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+    paths:
+      - "**.py"
 
 jobs:
-  publish:
+  check:
     strategy:
       matrix:
-        runs-on: [windows-latest, macos-latest, ubuntu-latest]
+        python-version: ["3.13"]
+        runs-on: [windows-latest, ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: write
@@ -19,35 +22,18 @@ jobs:
         uses: actions/checkout@v6
         with:
           lfs: true
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22.13.1
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: uv pip install -r requirements.txt
-      - name: Check versions
-        run: |
-          npm install -g npm@11.1.0
-          node -v
-          npm -v
-          python --version
-          pyinstaller --version
       - name: Package App with PyInstaller
         run: |
           python manage.py collectstatic --no-input
           python manage.py migrate --no-input
           pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean gnnpcsaftchat.spec
-
       - name: Check pyinstaller file
-        run: ./app_pkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
-      - name: Build and Publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd electron
-          npm install
-          npm run publish
+        run: ./apppkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
+      - name: Check files
+        run: ls -l ./app_pkg/dist/gnnpcsaftchat
