@@ -2,8 +2,12 @@ const { app, BrowserWindow, shell, Menu } = require("electron");
 const { spawn } = require("child_process");
 const path = require("path");
 const log = require("electron-log/main");
-const fetch = require("node-fetch");
 const fs = require("fs");
+
+const fetch =
+  globalThis.fetch ||
+  ((...args) =>
+    import("node-fetch").then(({ default: fetch }) => fetch(...args)));
 
 const controller = new AbortController();
 const { signal } = controller;
@@ -22,6 +26,7 @@ const mcpConfigPath = path.join(userDataPath, "mcp_server.json");
 const env = {
   ...process.env,
   GNNPCSAFTCHAT_DB_CHAT_PATH: dbChatPath,
+  GNNPCSAFTCHAT_DB_PATH: dbPath,
   GNNPCSAFTCHAT_LOG_PATH: logPath,
   GNNPCSAFTCHAT_MCP_SERVER_CONFIG: mcpConfigPath,
 };
@@ -60,10 +65,7 @@ const createWindow = async () => {
   win.loadFile(path.join(__dirname, "index.html"));
 
   await ensureDbMigrated();
-
-  // Start Django with the user database path
   startDjangoServer();
-
   await waitForDjangoServer();
 
   win.loadURL("http://localhost:19771");
