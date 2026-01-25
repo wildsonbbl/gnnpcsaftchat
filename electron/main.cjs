@@ -4,11 +4,6 @@ const path = require("path");
 const log = require("electron-log/main");
 const fs = require("fs");
 
-const fetch =
-  globalThis.fetch ||
-  ((...args) =>
-    import("node-fetch").then(({ default: fetch }) => fetch(...args)));
-
 const controller = new AbortController();
 const { signal } = controller;
 let djangoBackend;
