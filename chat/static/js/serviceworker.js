@@ -3,7 +3,6 @@
 
 var staticCacheName = "pwa-v" + new Date().getTime();
 var filesToCache = [
-  "/about/",
   "/static/fontawesomefree/css/brands.css",
   "/static/fontawesomefree/css/fontawesome.css",
   "/static/fontawesomefree/css/solid.css",
@@ -13,9 +12,6 @@ var filesToCache = [
   "/static/fontawesomefree/webfonts/fa-brands-400.ttf",
   "/static/fontawesomefree/webfonts/fa-solid-900.woff2",
   "/static/fontawesomefree/webfonts/fa-solid-900.ttf",
-  "/static/js/myidb.js",
-  "/static/js/queries.js",
-  "/static/js/install.js",
   "/static/images/icons/android/android-launchericon-48-48.png",
   "/static/images/icons/android/android-launchericon-72-72.png",
   "/static/images/icons/android/android-launchericon-96-96.png",
@@ -52,19 +48,5 @@ self.addEventListener("activate", (event) => {
           .map((cacheName) => caches.delete(cacheName)),
       );
     }),
-  );
-});
-
-// Serve from Cache
-self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    caches
-      .match(event.request)
-      .then((response) => {
-        return response || fetch(event.request);
-      })
-      .catch(() => {
-        return caches.match("/about/");
-      }),
   );
 });
