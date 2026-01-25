@@ -1,6 +1,6 @@
 {
   "name": "gnnpcsaftchat",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "In this app, you can chat with LLM models (Gemini or Ollama) with GNNPCSAFT tools, allowing you to ask questions about the PC-SAFT parameters of various compounds, predict thermodynamic properties, and get insights into the GNNPCSAFT's performance.",
   "main": "main.cjs",
   "scripts": {
