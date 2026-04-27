@@ -17,8 +17,8 @@ def get_gemini_models() -> Dict[str, List[str]]:
     if settings.DEBUG:
         return {}
     url = (
-        "https://raw.githubusercontent.com/wildsonbbl/gnnepcsaftwebapp/"
-        "refs/heads/dev/gnnmodel/data/gemini_models.json"
+        "https://raw.githubusercontent.com/wildsonbbl/gnnpcsaftchat"
+        "/refs/heads/main/chat/data/gemini_models.json"
     )
     try:
         with urlopen(url) as ans:
