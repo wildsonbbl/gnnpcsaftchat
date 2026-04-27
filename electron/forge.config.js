@@ -7,6 +7,7 @@ module.exports = {
     name: "gnnpcsaftchat",
     icon: "./icon.ico",
     extraResource: ["../app_pkg/dist/gnnpcsaftchat"],
+    tmpdir: false,
   },
   rebuildConfig: {},
   makers: [
@@ -16,6 +17,8 @@ module.exports = {
         setupIcon: "./icon.ico",
         iconUrl:
           "https://raw.githubusercontent.com/wildsonbbl/gnnepcsaftwebapp/refs/heads/main/gnnepcsaftelectron/storelogo_scale_400_hf3_icon.ico",
+        remoteReleases: "",
+        remoteToken: "",
       },
     },
     {
