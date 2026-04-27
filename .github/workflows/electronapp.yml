@@ -61,6 +61,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd electron
-          npm ci --prefer-offline --no-audit
+          npm install
           npm dedupe
           npm run publish
