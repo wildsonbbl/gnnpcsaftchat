@@ -62,5 +62,4 @@ jobs:
         run: |
           cd electron
           npm install
-          npm dedupe
           npm run publish
