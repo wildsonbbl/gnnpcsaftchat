@@ -28,10 +28,6 @@ jobs:
         with:
           python-version: "3.13"
           activate-environment: true
-      - name: Enable long paths on Windows
-        if: runner.os == 'Windows'
-        run: |
-          New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
       - name: Install dependencies
         run: uv pip install -r requirements.txt
       - name: Check versions
@@ -49,14 +45,25 @@ jobs:
 
       - name: Check pyinstaller file
         run: ./app_pkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
-      - name: Optimize dependencies for Windows
+      - name: Build and Publish (Windows short path)
         if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd electron
-          npm prune --production
-          npm cache clean --force
-          cd ../
-      - name: Build and Publish
+          subst X: "$env:GITHUB_WORKSPACE"
+          try {
+            Set-Location X:\electron
+            npm ci --prefer-offline --no-audit
+            npm dedupe
+            npm run publish
+          }
+          finally {
+            Set-Location $env:GITHUB_WORKSPACE
+            subst X: /d
+          }
+      - name: Build and Publish (macOS/Linux)
+        if: runner.os != 'Windows'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
