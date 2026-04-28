@@ -10,7 +10,7 @@ jobs:
   publish:
     strategy:
       matrix:
-        runs-on: [ windows-latest, macos-latest, ubuntu-latest ]
+        runs-on: [ windows-2022, macos-latest, ubuntu-latest ]
     runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: write
@@ -45,25 +45,7 @@ jobs:
 
       - name: Check pyinstaller file
         run: ./app_pkg/dist/gnnpcsaftchat/gnnpcsaftchat* check
-      - name: Build and Publish (Windows short path)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          subst X: "$env:GITHUB_WORKSPACE"
-          try {
-            Set-Location X:\electron
-            npm ci --prefer-offline --no-audit
-            npm dedupe
-            npm run publish
-          }
-          finally {
-            Set-Location $env:GITHUB_WORKSPACE
-            subst X: /d
-          }
-      - name: Build and Publish (macOS/Linux)
-        if: runner.os != 'Windows'
+      - name: Build and Publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
