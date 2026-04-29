@@ -10,7 +10,7 @@ jobs:
   publish:
     strategy:
       matrix:
-        runs-on: [ windows-2022, macos-latest, ubuntu-latest ]
+        runs-on: [ windows-latest, macos-latest, ubuntu-latest ]
     runs-on: ${{ matrix.runs-on }}
     permissions:
       contents: write
