@@ -15,6 +15,8 @@ $installerName = "gnnpcsaftchat-$version-$platform.msi"
 
 ## create package
 uv pip install -r requirements.txt
+uv run python manage.py collectstatic --no-input
+uv run python manage.py migrate --no-input
 uv run pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean ./gnnpcsaftchat.spec
 cd electron 
 npm ci --prefer-offline --no-audit
