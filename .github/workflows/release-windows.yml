@@ -44,7 +44,6 @@ jobs:
           node -v
           npm -v
           python --version
-          pyinstaller --version
 
       - name: Build MSI
         shell: pwsh
