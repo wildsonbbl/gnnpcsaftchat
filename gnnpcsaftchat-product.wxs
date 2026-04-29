@@ -1,0 +1,59 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="GNNPCSAFT Chat" Language="1033" Version="$(var.ProductVersion)"
+    Manufacturer="Wildson B. B. Lima" UpgradeCode="{afc8f269-36dd-4edc-82a0-7095352c021c}">
+    <MajorUpgrade DowngradeErrorMessage="A newer version of gnnpcsaft chat is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+    <Icon Id="AppIcon" SourceFile="$(var.ProjectDir)\electron\icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPCONTACT" Value="wil_bbl@hotmail.com" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/wildsonbbl/gnnpcsaftchat" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/wildsonbbl/gnnpcsaftchat/issues" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLDIR" Name="gnnpcsaftchat" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ApplicationProgramsFolder" Name="gnnpcsaftchat" />
+    </StandardDirectory>
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Feature Id="MainFeature" Title="gnnpcsaftchat" Level="1">
+      <ComponentGroupRef Id="AppFiles" />
+      <ComponentRef Id="StartMenuShortcutComponent" />
+      <ComponentRef Id="DesktopShortcutComponent" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="AppFiles" Directory="INSTALLDIR">
+      <Files Include="$(var.SourceDir)\**" />
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="StartMenuShortcutComponent" Guid="{3aa45f7a-3418-49e4-b39c-42bb9afe1cb2}">
+        <Shortcut Id="ApplicationStartMenuShortcut" Name="gnnpcsaftchat"
+          Description="GNNPCSAFT Chat desktop application" Target="[INSTALLDIR]gnnpcsaftchat.exe"
+          WorkingDirectory="INSTALLDIR" />
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+        <RegistryValue Root="HKCU" Key="Software\gnnpcsaftchat" Name="StartMenuShortcut"
+          Type="integer"
+          Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+  <Fragment>
+    <StandardDirectory Id="DesktopFolder">
+      <Component Id="DesktopShortcutComponent" Guid="{40f27551-3642-4443-a445-748c5ebdee69}">
+        <Shortcut Id="ApplicationDesktopShortcut" Name="gnnpcsaftchat"
+          Description="GNNPCSAFT Chat desktop application" Target="[INSTALLDIR]gnnpcsaftchat.exe"
+          WorkingDirectory="INSTALLDIR" />
+        <RegistryValue Root="HKCU" Key="Software\gnnpcsaftchat" Name="DesktopShortcut"
+          Type="integer"
+          Value="1" KeyPath="yes" />
+      </Component>
+    </StandardDirectory>
+  </Fragment>
+</Wix>
