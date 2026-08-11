@@ -4,12 +4,13 @@ from PyInstaller.utils.hooks import copy_metadata
 datas = [
     ("./chat/templates", "./chat/templates"),
     ("./productionfiles", "./productionfiles"),
+
 ]
 datas += copy_metadata("django-bootstrap-v5")
 
 
 a = Analysis(
-    ["manage.py"],
+    ["gui.py"],
     pathex=[],
     binaries=[],
     datas=datas,
@@ -39,6 +40,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=["electron/icon.ico"],
 )
 coll = COLLECT(
     exe,
