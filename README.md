@@ -4,7 +4,7 @@ The GNNPCSAFT Chat is an implementation of [our project](https://github.com/wild
 
 In this app, you can chat with LLM models (Gemini or Ollama) with GNNPCSAFT tools, allowing you to ask questions about the PC-SAFT parameters of various compounds, predict thermodynamic properties, and get insights into the GNNPCSAFT's performance.
 
-On [releases](https://github.com/wildsonbbl/gnnpcsaftchat/releases), you find a electron app for the chat. A container image is also available on [Docker Hub](https://hub.docker.com/r/wildsonbbl/gnnpcsaftchat), and can be run using:
+On [releases](https://github.com/wildsonbbl/gnnpcsaftchat/releases), you find an app for the chat. A container image is also available on [Docker Hub](https://hub.docker.com/r/wildsonbbl/gnnpcsaftchat), and can be run using:
 
 ```bash
 docker run -p 19771:8000 -e GNNPCSAFTCHAT_OLLAMA_API_BASE=http://host.docker.internal:11434 --add-host=host.docker.internal:host-gateway wildsonbbl/gnnpcsaftchat:latest
