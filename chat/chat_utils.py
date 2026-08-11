@@ -10,7 +10,7 @@ from typing import Callable, List, Optional
 from django.conf import settings
 from google.adk.artifacts.in_memory_artifact_service import InMemoryArtifactService
 from google.adk.runners import Runner
-from google.adk.sessions.database_session_service import DatabaseSessionService
+from google.adk.sessions import DatabaseSessionService
 from markdown_it import MarkdownIt
 from mdit_py_plugins.dollarmath import dollarmath_plugin
 
@@ -22,7 +22,7 @@ md_parser.use(dollarmath_plugin)
 md_parser.render(r"$$J_w = \frac{Q}{ADT}$$")
 
 APP_NAME = "GNNPCSAFT_Agent"
-DB_URL = "sqlite:///" + str(settings.DB_CHAT_PATH)
+DB_URL = "sqlite+aiosqlite:///" + str(settings.DB_CHAT_PATH)
 session_service = DatabaseSessionService(DB_URL)
 USER_ID = "LOCAL_USER_01"
 artifact_service = InMemoryArtifactService()
