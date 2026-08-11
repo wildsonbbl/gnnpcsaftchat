@@ -11,13 +11,48 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import platform
+import sys
 from pathlib import Path
 
 from decouple import Csv, config
 
+IS_PACKAGED = getattr(sys, "frozen", False)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOCAL_APP_DATA = BASE_DIR
+
+if IS_PACKAGED:
+    CURRENT_OS = platform.system()
+
+    if CURRENT_OS == "Windows":
+        # Windows AppData (Safe for MSIX / Windows Store)
+        # Defaults to: C:\Users\<Username>\AppData\Local\gnnpcsaftchat
+        LOCAL_APP_DATA = os.environ.get("LOCALAPPDATA")
+        if LOCAL_APP_DATA:
+            LOCAL_APP_DATA = Path(LOCAL_APP_DATA) / "gnnpcsaftchat"
+        else:
+            LOCAL_APP_DATA = BASE_DIR
+
+    elif CURRENT_OS == "Darwin":  # macOS
+        # macOS standard User Library Application Support
+        # Defaults to: /Users/<Username>/Library/Application Support/gnnpcsaftchat
+        LOCAL_APP_DATA = (
+            Path.home() / "Library" / "Application Support" / "gnnpcsaftchat"
+        )
+
+    else:  # Linux / Ubuntu
+        # Linux standard XDG data home (or fallback to ~/.local/share)
+        # Defaults to: /home/<Username>/.local/share/gnnpcsaftchat/logs
+        XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME")
+        if XDG_DATA_HOME:
+            LOCAL_APP_DATA = Path(XDG_DATA_HOME) / "gnnpcsaftchat"
+        else:
+            LOCAL_APP_DATA = Path.home() / ".local" / "share" / "gnnpcsaftchat"
+
+LOCAL_APP_DATA.mkdir(parents=True, exist_ok=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -28,7 +63,9 @@ SECRET_KEY = config("GNNPCSAFTCHAT_SECRET_KEY", default="ABCDEFG")
 PLATFORM = config("GNNPCSAFTCHAT_PLATFORM", default="desktop")
 
 MCP_SERVER_CONFIG = config(
-    "GNNPCSAFTCHAT_MCP_SERVER_CONFIG", default=BASE_DIR / "mcp_server.json", cast=Path
+    "GNNPCSAFTCHAT_MCP_SERVER_CONFIG",
+    default=LOCAL_APP_DATA / "mcp_server.json",
+    cast=Path,
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -108,10 +145,10 @@ ASGI_APPLICATION = "app.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DB_PATH = config("GNNPCSAFTCHAT_DB_PATH", default=BASE_DIR / "gnnpcsaft.db")
+DB_PATH = config("GNNPCSAFTCHAT_DB_PATH", default=LOCAL_APP_DATA / "gnnpcsaft.db")
 
 DB_CHAT_PATH = config(
-    "GNNPCSAFTCHAT_DB_CHAT_PATH", default=BASE_DIR / "gnnpcsaft.chat.db"
+    "GNNPCSAFTCHAT_DB_CHAT_PATH", default=LOCAL_APP_DATA / "gnnpcsaft.chat.db"
 )
 
 DATABASES = {
@@ -172,7 +209,7 @@ SECURE_SSL_REDIRECT = False
 
 SESSION_COOKIE_SECURE = True
 
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = PLATFORM == "webapp"
 
 CSRF_TRUSTED_ORIGINS = config(
     "GNNPCSAFTCHAT_DOMAIN_NAME",
@@ -183,7 +220,7 @@ CSRF_TRUSTED_ORIGINS = config(
 # Logging
 # https://docs.djangoproject.com/en/4.2/topics/logging/
 
-LOG_PATH = config("GNNPCSAFTCHAT_LOG_PATH", default=BASE_DIR, cast=Path)
+LOG_PATH = config("GNNPCSAFTCHAT_LOG_PATH", default=LOCAL_APP_DATA, cast=Path)
 LOG_LEVEL = config("GNNPCSAFTCHAT_LOG_LEVEL", default="WARNING")
 
 assert isinstance(LOG_PATH, Path), "LOG_PATH must be a Path object"
@@ -216,12 +253,30 @@ LOGGING = {
         },
     },
     "loggers": {
-        # Root logger - currently logs only to file
+        # Root logger - captures unhandled errors and overall system logs
         "": {
             "level": LOG_LEVEL,
-            # You could add 'console' here if you want logs in both places:
-            # "handlers": ["file", "console"],
             "handlers": ["file"],
+        },
+        "chat": {
+            "level": LOG_LEVEL,
+            "handlers": ["file"],
+            "propagate": False,
+        },
+        "uvicorn": {
+            "level": LOG_LEVEL,
+            "handlers": ["file"],
+            "propagate": False,
+        },
+        "uvicorn.error": {
+            "level": LOG_LEVEL,
+            "handlers": ["file"],
+            "propagate": False,
+        },
+        "uvicorn.access": {
+            "level": LOG_LEVEL,
+            "handlers": ["file"],
+            "propagate": False,
         },
     },
 }
