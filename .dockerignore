@@ -28,3 +28,6 @@ README.md
 **/.devcontainer
 **/.github
 **/traefik
+**/app_pkg
+**/productionfiles
+**/electron
