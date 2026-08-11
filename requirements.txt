@@ -3,7 +3,7 @@ numpy
 psycopg2-binary
 python-decouple
 rdkit
-polars==1.27.1
+polars
 django-bootstrap-v5
 whitenoise
 gunicorn
@@ -30,3 +30,4 @@ litellm>=1.68.1
 djlint
 pyinstaller
 pylint-django
+pywebview
