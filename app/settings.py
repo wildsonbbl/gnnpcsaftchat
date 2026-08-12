@@ -145,10 +145,16 @@ ASGI_APPLICATION = "app.asgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DB_PATH = config("GNNPCSAFTCHAT_DB_PATH", default=LOCAL_APP_DATA / "gnnpcsaft.db")
+DB_PATH = config(
+    "GNNPCSAFTCHAT_DB_PATH",
+    default=LOCAL_APP_DATA / "gnnpcsaft.db",
+    cast=Path,
+)
 
 DB_CHAT_PATH = config(
-    "GNNPCSAFTCHAT_DB_CHAT_PATH", default=LOCAL_APP_DATA / "gnnpcsaft.chat.db"
+    "GNNPCSAFTCHAT_DB_CHAT_PATH",
+    default=LOCAL_APP_DATA / "gnnpcsaft.chat.db",
+    cast=Path,
 )
 
 DATABASES = {
