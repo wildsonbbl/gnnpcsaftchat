@@ -40,7 +40,7 @@ uv run pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconf
 
 dist_dir="$script_dir/app_pkg/dist/gnnpcsaftchat"
 pkg_root="$script_dir/app_pkg/dist/deb_pkg"
-icon_src="$script_dir/gnnmodel/static/images/icons/ios/512.png"
+icon_src="$script_dir/chat/static/images/icons/ios/512.png"
 
 rm -rf "$pkg_root"
 mkdir -p \
