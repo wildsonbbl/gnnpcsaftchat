@@ -1,5 +1,5 @@
 """
-WSGI config for gnnepcsaft project.
+WSGI config for gnnpcsaft project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
