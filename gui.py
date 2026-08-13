@@ -8,17 +8,23 @@ import socket
 import sys
 import threading
 import webbrowser
+from pathlib import Path
 
 import bootstrap5
+import django
 import feos
 import webview
 import whitenoise
 from decouple import config
-from django.core.management import execute_from_command_line
+from django.core.management import call_command, execute_from_command_line
+from google.adk.sessions.migration import migration_runner
 from uvicorn import run
 
 import app.asgi
 import app.wsgi
+from app import _version
+from app import settings as app_settings
+from chat import logger
 
 webview.settings["OPEN_EXTERNAL_LINKS_IN_BROWSER"] = False
 
@@ -75,8 +81,60 @@ class WindowAPI:
         return url.startswith(f"http://localhost:{self.port}") or url.startswith("/")
 
 
+# Ensure local DB migrations are applied before starting the server
+def ensure_db_migrated():
+    """Ensure the user's local database has been migrated.
+
+    Creates a small flag file under `LOCAL_APP_DATA` to avoid
+    running migrations on every startup. Uses Django's
+    management `migrate --noinput` and google adks' migration_runner
+    when necessary.
+    """
+    try:
+        migrate_flag = (
+            Path(app_settings.LOCAL_APP_DATA) / f".db_migrated_v{_version.__version__}"
+        )
+
+        if not migrate_flag.exists():
+            logger.info("Running Django migrations (ensure_db_migrated)")
+
+            django.setup()
+
+            call_command("migrate", "--noinput")
+            check_chat_db()
+
+            migrate_flag.write_text("ok")
+            logger.info("Database migrations completed")
+        else:
+            logger.info("Migrations already applied (flag exists)")
+    except RuntimeError:
+        logger.exception("Failed to ensure database migrated")
+
+
+def check_chat_db():
+    "Ensure the user's local chat database is compatible with google adk updates"
+
+    assert isinstance(app_settings.DB_CHAT_PATH, Path)
+
+    if app_settings.DB_CHAT_PATH.exists():
+        if os.path.exists(str(app_settings.DB_CHAT_PATH) + "-bkp"):
+            os.remove(str(app_settings.DB_CHAT_PATH) + "-bkp")
+        os.rename(
+            str(app_settings.DB_CHAT_PATH),
+            str(app_settings.DB_CHAT_PATH) + "-bkp",
+        )
+        db_url = "sqlite+aiosqlite:///" + str(app_settings.DB_CHAT_PATH)
+        db_url_bkp = db_url + "-bkp"
+
+        migration_runner.upgrade(
+            source_db_url=db_url_bkp,
+            dest_db_url=db_url,
+        )
+
+
 if __name__ == "__main__":
     # 2. Start Django in a background thread
+    ensure_db_migrated()
     django_thread = threading.Thread(target=_start_django, daemon=True)
     django_thread.start()
 
