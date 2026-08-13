@@ -65,7 +65,7 @@ class WindowAPI:
         "open nav link in new window"
         if self.check_url(url):
             webview.create_window(
-                "GNNPCSAFT - New Window",
+                "GNNPCSAFT CHAT - New Window",
                 url,
                 width=800,
                 height=600,
@@ -144,7 +144,7 @@ def start_app():
 
     api = WindowAPI(port)
     webview.create_window(
-        "GNNPCSAFT",
+        "GNNPCSAFT CHAT",
         f"http://localhost:{port}",
         width=800,
         height=600,
