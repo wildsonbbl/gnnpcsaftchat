@@ -7,7 +7,7 @@ In this app, you can chat with LLM models (Gemini or Ollama) with GNNPCSAFT tool
 On [releases](https://github.com/wildsonbbl/gnnpcsaftchat/releases), you find an app for the chat. A container image is also available on [Docker Hub](https://hub.docker.com/r/wildsonbbl/gnnpcsaftchat), and can be run using:
 
 ```bash
-docker run -p 19771:8000 -e GNNPCSAFTCHAT_OLLAMA_API_BASE=http://host.docker.internal:11434 --add-host=host.docker.internal:host-gateway wildsonbbl/gnnpcsaftchat:latest
+docker run -p 19771:8000 wildsonbbl/gnnpcsaftchat:latest
 ```
 
 Access the app at `http://localhost:19771` in your web browser.
