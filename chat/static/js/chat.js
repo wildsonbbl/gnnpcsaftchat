@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const fileInput = document.getElementById("file-input"); // Get file input
   const attachButton = document.getElementById("attach-file-button"); // Get attach button
   const filePreviewContainer = document.getElementById(
-    "file-preview-container"
+    "file-preview-container",
   );
   filePreviewContainer.style.display = "none"; // Hide initially
 
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (file.size > maxSize) {
         showToast(
           `File is too large. Maximum size is ${maxSize / 1024 / 1024} MB.`,
-          "error"
+          "error",
         );
         removeSelectedFile();
         return;
@@ -116,8 +116,8 @@ document.addEventListener("DOMContentLoaded", function () {
         // Show preview
         filePreviewContainer.innerHTML = `
                 <span class="me-2">${file.name} (${(file.size / 1024).toFixed(
-          1
-        )} KB)</span>
+                  1,
+                )} KB)</span>
                 <button type="button" class="btn-close btn-sm" aria-label="Remove file" onclick="removeSelectedFile()"></button>
             `;
         filePreviewContainer.style.display = "block";
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Add listener for the Update Ollama Models button
   const updateOllamaModelsBtn = document.getElementById(
-    "update-ollama-models-btn"
+    "update-ollama-models-btn",
   );
   if (updateOllamaModelsBtn) {
     updateOllamaModelsBtn.onclick = function () {
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (saveMcpConfigBtn) {
     saveMcpConfigBtn.onclick = function () {
       const newConfigContent = document.getElementById(
-        "mcp-config-content-input"
+        "mcp-config-content-input",
       ).value;
       const mcpConfigError = document.getElementById("mcp-config-error");
       mcpConfigError.classList.add("d-none");
@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
         JSON.stringify({
           action: "save_mcp_config_content",
           content: newConfigContent,
-        })
+        }),
       );
     };
   } else {
@@ -210,24 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
     removeSelectedFile(); // Clear file after sending
     messageInputDom.style.height = "auto"; // Reset textarea height
   };
-
-  // Export chat log
-  document
-    .getElementById("chat-log-save_button")
-    .addEventListener("click", function () {
-      const dataStr =
-        "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(messages));
-      const downloadAnchorNode = document.createElement("a");
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute(
-        "download",
-        `${currentSessionName || "chat"}.json`
-      );
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    });
 
   // New session button
   document
