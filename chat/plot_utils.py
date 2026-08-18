@@ -1,7 +1,7 @@
 "helper for plotting"
 
 import uuid
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 from gnnepcsaft.pcsaft.pcsaft_feos import (
@@ -18,6 +18,33 @@ from gnnepcsaft.pcsaft.pcsaft_feos import (
 )
 from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
 from gnnepcsaft_mcp_server.utils import predict_pcsaft_parameters
+
+PLOT_HTML_STORE: Dict[str, str] = {}
+
+
+def _make_plot_response(
+    plot_type: str,
+    data: Dict[str, Any],
+    html: str,
+    success: bool = True,
+    message: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Create a compact tool response for the agent and keep HTML for frontend use."""
+    plot_id = f"{plot_type}_{uuid.uuid4().hex}"
+    PLOT_HTML_STORE[plot_id] = html
+    return {
+        "success": success,
+        "message": message
+        or ("Plot rendered successfully." if success else "Plot failed to render."),
+        "plot_id": plot_id,
+        "plot_type": plot_type,
+        "data": data,
+    }
+
+
+def pop_plot_html(plot_id: str) -> Optional[str]:
+    """Retrieve and remove a stored plot HTML block for client rendering."""
+    return PLOT_HTML_STORE.pop(plot_id, None)
 
 
 def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
@@ -41,15 +68,21 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
         pure_den_feos(parameters=parameters, state=[T, pressure]) for T in temperatures
     ]
 
+    plot_data = {"x": temperatures.tolist(), "y": densities}
     data = [[temperatures.tolist(), densities], [[], []]]
     plot_id = f"den_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
     getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="density",
+        data=plot_data,
+        html=html,
+        message="Density plot generated successfully.",
+    )
 
 
 def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
@@ -72,15 +105,21 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
         pure_vp_feos(parameters=parameters, state=[T]) for T in temperatures
     ]
 
+    plot_data = {"x": temperatures.tolist(), "y": vapor_pressures}
     data = [[temperatures.tolist(), vapor_pressures], [[], []]]
     plot_id = f"vp_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Vapor pressure (Pa) plot"></div>
     <script>
     getplot({data},0,"Vapor Pressure (Pa)","{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="vapor_pressure",
+        data=plot_data,
+        html=html,
+        message="Vapor pressure plot generated successfully.",
+    )
 
 
 def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
@@ -101,15 +140,21 @@ def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
 
     h_lv = [pure_h_lv_feos(parameters=parameters, state=[T]) for T in temperatures]
 
+    plot_data = {"x": temperatures.tolist(), "y": h_lv}
     data = [[temperatures.tolist(), h_lv], [[], []]]
     plot_id = f"h_lv_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Enthalpy of vaporization (kJ/mol) plot"></div>
     <script>
     getplot({data},0,"Enthalpy of vaporization (kJ/mol)","{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="enthalpy_vaporization",
+        data=plot_data,
+        html=html,
+        message="Enthalpy of vaporization plot generated successfully.",
+    )
 
 
 def plot_pure_surface_tension(smiles: str, t_min: float):
@@ -129,15 +174,21 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
 
     st, temperatures = pure_surface_tension_feos(parameters=parameters, state=[t_min])
 
+    plot_data = {"x": temperatures.tolist(), "y": st.tolist()}
     data = [[temperatures.tolist(), st.tolist()], [[], []]]
     plot_id = f"st_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Surface Tension (mN/m) plot"></div>
     <script>
     getplot({data},0,"Surface Tension (mN/m)","{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="surface_tension",
+        data=plot_data,
+        html=html,
+        message="Surface tension plot generated successfully.",
+    )
 
 
 def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
@@ -158,15 +209,25 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
 
     output = phase_diagram_feos(parameters=parameters, state=[t_min])
 
+    plot_data = {
+        "temperature": output["temperature"],
+        "density_liquid": output["density liquid"],
+        "density_vapor": output["density vapor"],
+    }
     data = [output["temperature"], output["density liquid"], output["density vapor"]]
     plot_id = f"t_rho_diagram_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Phase diagram plot"></div>
     <script>
     get_phase_diagram({data},0,"Temperature (K)","{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="phase_diagram",
+        data=plot_data,
+        html=html,
+        message="Phase diagram generated successfully.",
+    )
 
 
 def plot_mix_density(  # pylint: disable=R0913,R0917
@@ -204,15 +265,21 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
         for T in temperatures
     ]
 
+    plot_data = {"x": temperatures.tolist(), "y": densities}
     data = [[temperatures.tolist(), densities], [[], []]]
     plot_id = f"den_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
     getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="mixture_density",
+        data=plot_data,
+        html=html,
+        message="Mixture density plot generated successfully.",
+    )
 
 
 def plot_mix_vp(
@@ -250,10 +317,10 @@ def plot_mix_vp(
     ]
     bubble, dew = [list(x) for x in zip(*results)]
 
+    plot_data = {"x": temperatures.tolist(), "bubble": bubble, "dew": dew}
     data_bubble = [[temperatures.tolist(), bubble], [[], []]]
     plot_id = f"bubble_dew_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Bubble/Dew points (Pa)"></div>
     <script>
     getplot({data_bubble},0,"Pressure (Pa)","{plot_id}");
@@ -267,6 +334,12 @@ def plot_mix_vp(
     Plotly.addTraces("{plot_id}", trace2);
     </script>
     """
+    return _make_plot_response(
+        plot_type="bubble_dew",
+        data=plot_data,
+        html=html,
+        message="Bubble/dew plot generated successfully.",
+    )
 
 
 def plot_binary_lle(
@@ -307,9 +380,13 @@ def plot_binary_lle(
         kij_matrix=kij_matrix,
     )
 
+    plot_data = {
+        "temperature": output["temperature"],
+        "x0": output["x0"],
+        "y0": output["y0"],
+    }
     plot_id = f"b_lle_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Binary LLE diagram"></div>
     <script>
     get_binary_phase_diagram(
@@ -320,6 +397,12 @@ def plot_binary_lle(
     "{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="binary_lle",
+        data=plot_data,
+        html=html,
+        message="Binary LLE diagram generated successfully.",
+    )
 
 
 def plot_binary_vle(
@@ -351,9 +434,13 @@ def plot_binary_vle(
         kij_matrix=kij_matrix,
     )
 
+    plot_data = {
+        "temperature": output["temperature"],
+        "x0": output["x0"],
+        "y0": output["y0"],
+    }
     plot_id = f"b_vle_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Binary VLE diagram"></div>
     <script>
     get_binary_phase_diagram(
@@ -364,6 +451,12 @@ def plot_binary_vle(
     "{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="binary_vle",
+        data=plot_data,
+        html=html,
+        message="Binary VLE diagram generated successfully.",
+    )
 
 
 def plot_binary_vle_xy(
@@ -395,9 +488,9 @@ def plot_binary_vle_xy(
         kij_matrix=kij_matrix,
     )
 
+    plot_data = {"x0": output["x0"], "y0": output["y0"]}
     plot_id = f"b_vle_xy_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Binary VLE diagram"></div>
     <script>
     get_binary_vle_phase_diagram_xy(
@@ -406,6 +499,12 @@ def plot_binary_vle_xy(
     "{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="binary_vle_xy",
+        data=plot_data,
+        html=html,
+        message="Binary x-y VLE diagram generated successfully.",
+    )
 
 
 def _get_ternary_lle_data(
@@ -477,9 +576,9 @@ def plot_ternary_lle(
         kij_matrix=kij_matrix,
     )
 
+    plot_data = output
     plot_id = f"t_lle_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="Ternary LLE diagram"></div>
     <script>
     get_ternary_lle_phase_diagram(
@@ -487,6 +586,12 @@ def plot_ternary_lle(
     "{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="ternary_lle",
+        data=plot_data,
+        html=html,
+        message="Ternary LLE diagram generated successfully.",
+    )
 
 
 def plot_3d_molecule(smiles: str):
@@ -502,11 +607,16 @@ def plot_3d_molecule(smiles: str):
 
     mol = v3000_mol_block(smiles=smiles).replace("\n", "\\n")
     plot_id = f"3d_mol_plot_{uuid.uuid4().hex}"
-
-    return f"""
+    html = f"""
     <div id="{plot_id}" alt="3D molecule" class="molplot-style"></div>
     <script>
     var mol = "{mol}";
     loadmol(mol, "{plot_id}");
     </script>
     """
+    return _make_plot_response(
+        plot_type="molecule_3d",
+        data={"smiles": smiles},
+        html=html,
+        message="3D molecule view generated successfully.",
+    )

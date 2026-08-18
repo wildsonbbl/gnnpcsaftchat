@@ -10,6 +10,7 @@ from . import logger
 from .agents_utils import is_api_key_valid
 from .chat_utils import USER_ID, markdown_to_html
 from .models import ChatSession
+from .plot_utils import pop_plot_html
 from .session_operations import ChatSessionsDBOperations
 
 
@@ -118,22 +119,40 @@ class ChatConsumerMessagingOperations(ChatSessionsDBOperations):
                 continue
             all_texts = ""
             for part in all_parts:
-                if part.text:
-                    resp_text = part.text
-                    all_texts += resp_text + "\n\n"
-                elif part.function_call and part.function_call.name:
-                    resp_text = "**Calling:** `" + part.function_call.name + "`"
-                    all_texts += resp_text + "\n\n"
-                else:
-                    resp_text = None
-                if resp_text:
-                    message = {
-                        "msg": markdown_to_html(resp_text),
-                        "source": "assistant",
-                    }
-                    await self.send(text_data=json.dumps({"text": message}))
-                    await self.send(text_data=json.dumps({"action": "ongoing_turn"}))
-                    await self.save_message_to_db(message)
-                else:
-                    all_texts += f"No text or function_call in part: {part}"
+                try:
+                    if part.text:
+                        resp_text = part.text
+                        all_texts += resp_text + "\n\n"
+                    elif part.function_call and part.function_call.name:
+                        resp_text = "**Calling:** `" + part.function_call.name + "`"
+                        all_texts += resp_text + "\n\n"
+                    elif part.function_response and part.function_response.response:
+                        response_payload = part.function_response.response
+                        plot_id = response_payload.get("plot_id")
+                        if plot_id:
+                            html = pop_plot_html(plot_id)
+                            if html:
+                                message = {"msg": html, "source": "assistant"}
+                                await self.send(text_data=json.dumps({"text": message}))
+                                await self.send(
+                                    text_data=json.dumps({"action": "ongoing_turn"})
+                                )
+                                await self.save_message_to_db(message)
+                        resp_text = None
+                    else:
+                        resp_text = None
+                    if resp_text:
+                        message = {
+                            "msg": markdown_to_html(resp_text),
+                            "source": "assistant",
+                        }
+                        await self.send(text_data=json.dumps({"text": message}))
+                        await self.send(
+                            text_data=json.dumps({"action": "ongoing_turn"})
+                        )
+                        await self.save_message_to_db(message)
+                    else:
+                        all_texts += f"No text or function_call in part: {part}"
+                except Exception as exc:  # pylint: disable=broad-exception-caught
+                    logger.warning("Agent response handling failed: %s", exc)
             await asyncio.sleep(0.5)

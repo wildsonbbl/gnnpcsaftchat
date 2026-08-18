@@ -3,11 +3,13 @@
 import json
 import os
 import uuid
+from unittest.mock import patch
 
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from .models import ChatSession
+from .plot_utils import plot_pure_density
 
 
 class ViewsTestCase(TestCase):
@@ -32,6 +34,28 @@ class ViewsTestCase(TestCase):
         response = self.client.get(reverse("about"))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "about.html")
+
+
+class PlotUtilsContractTest(TestCase):
+    """Test that plotting helper tools return structured, agent-safe payloads."""
+
+    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={"mock": "params"})
+    @patch(
+        "chat.plot_utils.pure_den_feos",
+        side_effect=lambda parameters, state: float(state[0]) * 2.0,
+    )
+    def test_plot_pure_density_returns_agent_safe_payload(
+        self, mock_pure_den_feos, mock_predict
+    ):
+        """Plot helpers should expose only plot metadata and success status."""
+        result = plot_pure_density("CC", 280.0, 300.0, 101325.0)
+
+        self.assertIsInstance(result, dict)
+        self.assertTrue(result["success"])
+        self.assertIn("message", result)
+        self.assertIn("data", result)
+        self.assertNotIn("html", result)
+        self.assertEqual(result["plot_type"], "density")
 
 
 class APIViewsTestCase(TestCase):
@@ -98,6 +122,4 @@ class APIViewsTestCase(TestCase):
 
         response_data = json.loads(response.content)
         self.assertFalse(response_data["success"])
-        self.assertEqual(response_data["error"], "Session not found")
-        self.assertEqual(response_data["error"], "Session not found")
         self.assertEqual(response_data["error"], "Session not found")
