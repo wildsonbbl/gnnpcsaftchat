@@ -129,16 +129,9 @@ class ChatConsumerMessagingOperations(ChatSessionsDBOperations):
                     elif part.function_response and part.function_response.response:
                         response_payload = part.function_response.response
                         plot_id = response_payload.get("plot_id")
-                        if plot_id:
-                            html = pop_plot_html(plot_id)
-                            if html:
-                                message = {"msg": html, "source": "assistant"}
-                                await self.send(text_data=json.dumps({"text": message}))
-                                await self.send(
-                                    text_data=json.dumps({"action": "ongoing_turn"})
-                                )
-                                await self.save_message_to_db(message)
                         resp_text = None
+                        if plot_id:
+                            resp_text = pop_plot_html(plot_id)
                     else:
                         resp_text = None
                     if resp_text:
