@@ -330,7 +330,7 @@ def plot_mix_vp(
 
 def plot_binary_lle(
     smiles_list: List[str],
-    temperatures: List[float],
+    temp_min_and_max: List[float],
     pressure: float,
     mole_fractions: List[float],
     kij_matrix: Optional[List[List[float]]] = None,
@@ -342,10 +342,10 @@ def plot_binary_lle(
 
     Args:
       smiles_list (List[str]): List with binary SMILES.
-      temperatures (List[float]): Temperature range (K) [t_min, t_max]
-        to calculate LLE diagram
+      temp_min_and_max (List[float]): Temperature min and max (K) [t_min, t_max]
+        to calculate LLE diagram within
       pressure (float): System pressure (Pa)
-      mole_fractions (List[float]): Mole fractions list [x1, x2]
+      mole_fractions (List[float]): Global mole fractions [x1, x2] used as starting value
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
     """
@@ -358,7 +358,7 @@ def plot_binary_lle(
     output = mix_lle_diagram_feos(
         parameters=parameters,
         state=[
-            *temperatures,
+            *temp_min_and_max,
             pressure,
             *mole_fractions,
         ],
