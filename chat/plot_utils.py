@@ -330,21 +330,22 @@ def plot_mix_vp(
 
 def plot_binary_lle(
     smiles_list: List[str],
-    t_min: float,
+    temperatures: List[float],
     pressure: float,
     mole_fractions: List[float],
     kij_matrix: Optional[List[List[float]]] = None,
 ):
     """
     When asked, use this tool to show the user a T-x-x LLE diagram for a binary mixture
-    from t_min to t_min + 50 K at pressure (Pa). Mole fractions are used as starting value,
+    from t_min to t_max K at pressure (Pa). Mole fractions are used as starting value,
     so it needs to be within the two phase region.
 
     Args:
       smiles_list (List[str]): List with binary SMILES.
-      t_min (float): Minimum temperature (K) to calculate LLE diagram
+      temperatures (List[float]): Temperature range (K) [t_min, t_max]
+        to calculate LLE diagram
       pressure (float): System pressure (Pa)
-      mole_fractions (List[float]): Mole fractions list
+      mole_fractions (List[float]): Mole fractions list [x1, x2]
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
     """
@@ -357,7 +358,7 @@ def plot_binary_lle(
     output = mix_lle_diagram_feos(
         parameters=parameters,
         state=[
-            t_min,
+            *temperatures,
             pressure,
             *mole_fractions,
         ],
