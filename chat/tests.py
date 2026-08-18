@@ -45,7 +45,7 @@ class PlotUtilsContractTest(TestCase):
         side_effect=lambda parameters, state: float(state[0]) * 2.0,
     )
     def test_plot_pure_density_returns_agent_safe_payload(
-        self, mock_pure_den_feos, mock_predict
+        self, _mock_pure_den_feos, _mock_predict
     ):
         """Plot helpers should expose only plot metadata and success status."""
         result = plot_pure_density("CC", 280.0, 300.0, 101325.0)
