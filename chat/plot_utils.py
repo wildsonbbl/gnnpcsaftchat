@@ -50,8 +50,6 @@ def pop_plot_html(plot_id: str) -> Optional[str]:
 def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     """
     When asked, use this tool to show the user a plot of density (mol/m³).
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -88,8 +86,6 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
 def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
     """
     When asked, use this tool to show the user a plot of vapor pressure (Pa).
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -125,8 +121,6 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
 def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
     """
     When asked, use this tool to show the user a plot of enthalpy of vaporization (kJ/mol).
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -161,8 +155,6 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
     """
     When asked, use this tool to show the user a plot of Surface Tension (mN/m)
     from t_min up to the critical temperature.
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -196,8 +188,6 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
     When asked, use this tool to show the user a pure-component
     temperature (K) vs density (mol/m³) phase diagram
     from t_min up to the critical temperature.
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -240,8 +230,6 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
 ):
     """
     When asked, use this tool to show the user a plot of density (mol/m³) for a mixture.
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles_list (List[str]): List of mixture SMILES.
@@ -292,8 +280,6 @@ def plot_mix_vp(
     """
     When asked, use this tool to show the user a plot of Vapor Pressure
     (Bubble/Dew points, Pa) for a mixture.
-    To show the plot, answer the user with the exact content from
-    the result part of this tool and nothing else.
 
     Args:
       smiles_list (List[str]): List of mixture SMILES.
@@ -353,8 +339,6 @@ def plot_binary_lle(
     When asked, use this tool to show the user a T-x-x LLE diagram for a binary mixture
     from t_min to t_min + 50 K at pressure (Pa). Mole fractions are used as starting value,
     so it needs to be within the two phase region.
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles_list (List[str]): List with binary SMILES.
@@ -413,8 +397,6 @@ def plot_binary_vle(
     """
     When asked, use this tool to show the user a T-x-y VLE diagram for a binary mixture
     at pressure (Pa).
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles_list (List[str]): List with binary SMILES.
@@ -467,8 +449,6 @@ def plot_binary_vle_xy(
     """
     When asked, use this tool to show the user a x-y VLE diagram for a binary mixture
     at pressure (Pa).
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles_list (List[str]): List with binary SMILES.
@@ -554,8 +534,6 @@ def plot_ternary_lle(
     """
     When asked, use this tool to show the user a LLE diagram for a ternary mixture
     at temperature (K) and pressure (Pa).
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles_list (List[str]): List with ternary SMILES.
@@ -597,8 +575,6 @@ def plot_ternary_lle(
 def plot_3d_molecule(smiles: str):
     """
     When asked, use this tool to show the user a 3D molecule.
-    To show the plot, answer the user with the exact content from
-    the result part of this tool.
 
     Args:
       smiles (str): SMILES of the molecule.
