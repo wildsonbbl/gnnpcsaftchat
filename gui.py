@@ -17,7 +17,7 @@ import webview
 import whitenoise
 from decouple import config
 from django.core.management import call_command, execute_from_command_line
-from google.adk.sessions.migration import migration_runner
+from google.adk.sessions.migration import _schema_check_utils, migration_runner
 from uvicorn import run
 
 import app.asgi
@@ -113,16 +113,20 @@ def check_chat_db():
     "Ensure the user's local chat database is compatible with google adk updates"
 
     assert isinstance(app_settings.DB_CHAT_PATH, Path)
+    db_url = "sqlite+aiosqlite:///" + str(app_settings.DB_CHAT_PATH)
+    db_url_bkp = db_url + "-bkp"
 
-    if app_settings.DB_CHAT_PATH.exists():
+    if (
+        app_settings.DB_CHAT_PATH.exists()
+        and _schema_check_utils.LATEST_SCHEMA_VERSION
+        != _schema_check_utils.get_db_schema_version(db_url)
+    ):
         if os.path.exists(str(app_settings.DB_CHAT_PATH) + "-bkp"):
             os.remove(str(app_settings.DB_CHAT_PATH) + "-bkp")
         os.rename(
             str(app_settings.DB_CHAT_PATH),
             str(app_settings.DB_CHAT_PATH) + "-bkp",
         )
-        db_url = "sqlite+aiosqlite:///" + str(app_settings.DB_CHAT_PATH)
-        db_url_bkp = db_url + "-bkp"
 
         migration_runner.upgrade(
             source_db_url=db_url_bkp,
