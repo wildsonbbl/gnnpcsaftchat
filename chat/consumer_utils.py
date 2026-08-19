@@ -18,7 +18,7 @@ from google.adk.tools.mcp_tool.mcp_session_manager import (
     StdioConnectionParams,
 )
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
-from google.genai.types import Part
+from google.genai.types import Modality, Part
 from mcp.client.stdio import StdioServerParameters
 
 from . import logger
@@ -68,7 +68,7 @@ class CurrentChatSessionConsumer(AsyncWebsocketConsumer):
     session_id: str
     runner_session: Session
     runner: Runner
-    run_config = RunConfig(response_modalities=["TEXT"])
+    run_config = RunConfig(response_modalities=[Modality.TEXT])
     agent_task = None
     mcp_tools: List[Any] = []
     original_tools: List[Any] = all_tools
