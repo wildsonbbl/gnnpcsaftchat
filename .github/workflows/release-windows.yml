@@ -35,6 +35,11 @@ jobs:
           python-version: "3.13"
           activate-environment: true
 
+      - name: Download datasets from HuggingFace
+        run: |
+          git clone https://huggingface.co/wildsonbbl/gnnepcsaft  hfdata
+          Copy-Item -Path .\hfdata\_data -Destination .\chat -Recurse -Force
+
       - name: Build MSI
         id: build
         shell: pwsh
