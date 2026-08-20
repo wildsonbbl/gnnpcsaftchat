@@ -1,4 +1,4 @@
-// plots the GNN ePC-SAFT model results
+// plots the GNNPCSAFT model results
 // and the ThermoML archive data
 
 function get_layout(xlegendpos = 0, xtitle = "", ytitle = "", title = "") {
@@ -115,7 +115,7 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
     c: ternary_lle_phase_diagram_data["x2"],
     mode: "markers",
     type: "scatterternary",
-    name: "Liquid phase 1",
+    name: "Phase 1",
   };
 
   var trace2 = {
@@ -124,7 +124,7 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
     c: ternary_lle_phase_diagram_data["y2"],
     mode: "markers",
     type: "scatterternary",
-    name: "Liquid phase 2",
+    name: "Phase 2",
   };
 
   Plotly.newPlot(

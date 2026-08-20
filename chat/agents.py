@@ -15,17 +15,17 @@ from google.adk.models.lite_llm import LiteLlm
 
 from .plot_utils import (
     plot_3d_molecule,
-    plot_binary_lle,
-    plot_binary_vle,
+    plot_binary_lle_txx,
+    plot_binary_vle_txy,
     plot_binary_vle_xy,
     plot_mix_density,
-    plot_mix_vp,
+    plot_mix_vle_pt,
     plot_pure_density,
     plot_pure_h_lv,
     plot_pure_phase_diagram_t_rho,
     plot_pure_surface_tension,
     plot_pure_vapor_pressure,
-    plot_ternary_lle,
+    plot_ternary_lle_or_vle,
 )
 
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "False"
@@ -44,11 +44,11 @@ all_tools = [
     plot_pure_surface_tension,
     plot_pure_phase_diagram_t_rho,
     plot_mix_density,
-    plot_mix_vp,
-    plot_binary_lle,
-    plot_binary_vle,
+    plot_mix_vle_pt,
+    plot_binary_lle_txx,
+    plot_binary_vle_txy,
     plot_binary_vle_xy,
-    plot_ternary_lle,
+    plot_ternary_lle_or_vle,
     plot_3d_molecule,
     batch_inchi_to_smiles,
     batch_smiles_to_inchi,

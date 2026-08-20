@@ -270,7 +270,7 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
     )
 
 
-def plot_mix_vp(
+def plot_mix_vle_pt(
     smiles_list: List[str],
     t_min: float,
     t_max: float,
@@ -278,14 +278,14 @@ def plot_mix_vp(
     kij_matrix: Optional[List[List[float]]] = None,
 ):
     """
-    When asked, use this tool to show the user a plot of Vapor Pressure
-    (Bubble/Dew points, Pa) for a mixture.
+    When asked, use this tool to show the user a plot of Bubble/Dew points (Pa) for a mixture
+    with any number of components.
 
     Args:
-      smiles_list (List[str]): List of mixture SMILES.
+      smiles_list (List[str]): List of mixture SMILES [SMILES_1, SMILES_2, SMILES_3, ...].
       t_min (float): minimum temperature (K) to calculate Bubble/Dew points (Pa)
       t_max (float): maximun temperature (K) to calculate Bubble/Dew points (Pa)
-      mole_fractions (List[float]): mole fractions list
+      mole_fractions (List[float]): mole fractions list [X1, X2, X3, ...]
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
     """
@@ -309,7 +309,7 @@ def plot_mix_vp(
     html = f"""
     <div id="{plot_id}" alt="Bubble/Dew points (Pa)"></div>
     <script>
-    getplot({data_bubble},0,"Pressure (Pa)","{plot_id}");
+    getplot({data_bubble},0,"Pressure (Pa)","{plot_id}",trace_name = "Bubble Curve");
     var trace2 = {{
               x: {temperatures.tolist()},
               y: {dew},
@@ -328,7 +328,7 @@ def plot_mix_vp(
     )
 
 
-def plot_binary_lle(
+def plot_binary_lle_txx(
     smiles_list: List[str],
     temp_min_and_max: List[float],
     pressure: float,
@@ -341,7 +341,7 @@ def plot_binary_lle(
     so it needs to be within the two phase region.
 
     Args:
-      smiles_list (List[str]): List with binary SMILES.
+      smiles_list (List[str]): List with binary SMILES [SMILES_1, SMILES_2].
       temp_min_and_max (List[float]): Temperature min and max (K) [t_min, t_max]
         to calculate LLE diagram within
       pressure (float): System pressure (Pa)
@@ -390,7 +390,7 @@ def plot_binary_lle(
     )
 
 
-def plot_binary_vle(
+def plot_binary_vle_txy(
     smiles_list: List[str],
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
@@ -400,7 +400,7 @@ def plot_binary_vle(
     at pressure (Pa).
 
     Args:
-      smiles_list (List[str]): List with binary SMILES.
+      smiles_list (List[str]): List with binary SMILES [SMILES_1, SMILES_2].
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
@@ -452,7 +452,7 @@ def plot_binary_vle_xy(
     at pressure (Pa).
 
     Args:
-      smiles_list (List[str]): List with binary SMILES.
+      smiles_list (List[str]): List with binary SMILES [SMILES_1, SMILES_2].
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
 
@@ -526,18 +526,18 @@ def _get_ternary_lle_data(
     return _collect_tie_lines(x1, x2, x3, mask)
 
 
-def plot_ternary_lle(
+def plot_ternary_lle_or_vle(
     smiles_list: List[str],
     temperature: float,
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
 ):
     """
-    When asked, use this tool to show the user a LLE diagram for a ternary mixture
+    When asked, use this tool to show the user a LLE or VLE diagram for a ternary mixture
     at temperature (K) and pressure (Pa).
 
     Args:
-      smiles_list (List[str]): List with ternary SMILES.
+      smiles_list (List[str]): List with ternary SMILES [SMILES_1, SMILES_2, SMILES_3].
       temperature (float): System temperature (K)
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
@@ -558,7 +558,7 @@ def plot_ternary_lle(
     plot_data = output
     plot_id = f"t_lle_plot_{uuid.uuid4().hex}"
     html = f"""
-    <div id="{plot_id}" alt="Ternary LLE diagram"></div>
+    <div id="{plot_id}" alt="Ternary LLE/VLE diagram"></div>
     <script>
     get_ternary_lle_phase_diagram(
     {output},
