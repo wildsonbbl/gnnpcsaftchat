@@ -1,14 +1,15 @@
-// plots the GNNPCSAFT model results
+// plots the GNN PC-SAFT model results
 // and the ThermoML archive data
 
-function get_layout(xlegendpos = 0, xtitle = "", ytitle = "", title = "") {
+function get_layout(xtitle = "", ytitle = "", title = "") {
   return {
     title: { text: title },
     font: {
       family: "Times New Roman",
+      size: 10,
     },
     legend: {
-      x: xlegendpos,
+      x: 0,
       y: 1,
       font: { family: "monospace", size: 10 },
     },
@@ -51,13 +52,13 @@ function get_layout(xlegendpos = 0, xtitle = "", ytitle = "", title = "") {
   };
 }
 
-function getplot(data, xlegendpos, ytitle, id, trace_name = "GNN") {
+function getplot(alldata, xtitle, ytitle, title, id) {
   var trace1 = {
-    x: data[1][0],
-    y: data[1][1],
+    x: alldata["TML"][0],
+    y: alldata["TML"][1],
     mode: "markers",
     type: "scatter",
-    name: "ThermoML Archive**",
+    name: alldata["legends"][2],
     marker: {
       symbol: "x",
       color: "black",
@@ -65,16 +66,27 @@ function getplot(data, xlegendpos, ytitle, id, trace_name = "GNN") {
   };
 
   var trace2 = {
-    x: data[0][0],
-    y: data[0][1],
+    x: alldata["GNN"][0],
+    y: alldata["GNN"][1],
     mode: "lines",
     type: "scatter",
-    name: trace_name,
+    name: alldata["legends"][0],
   };
 
-  var layout = get_layout(xlegendpos, "Temperature (K)", ytitle);
+  var layout = get_layout(xtitle, ytitle, title);
 
   var plot_data = [trace1, trace2];
+
+  if (alldata["GNN"][2]) {
+    var trace3 = {
+      x: alldata["GNN"][0],
+      y: alldata["GNN"][2],
+      mode: "lines",
+      type: "scatter",
+      name: alldata["legends"][1],
+    };
+    var plot_data = [trace1, trace2, trace3];
+  }
 
   Plotly.newPlot(id, plot_data, layout, {
     responsive: true,
@@ -82,25 +94,41 @@ function getplot(data, xlegendpos, ytitle, id, trace_name = "GNN") {
   });
 }
 
-function get_phase_diagram(phase_diagram_data, xlegendpos, ytitle, id) {
+function getplot_fixed_y(alldata, xtitle, ytitle, title, id) {
   var trace1 = {
-    y: phase_diagram_data[0],
-    x: phase_diagram_data[1],
-    mode: "lines",
+    x: alldata["TML"][1],
+    y: alldata["TML"][0],
+    mode: "markers",
     type: "scatter",
-    name: "Liquid",
-  };
-  var trace2 = {
-    y: phase_diagram_data[0],
-    x: phase_diagram_data[2],
-    mode: "lines",
-    type: "scatter",
-    name: "Vapor",
+    name: alldata["legends"][2],
+    marker: {
+      symbol: "x",
+      color: "black",
+    },
   };
 
-  var layout = get_layout(xlegendpos, "Density (mol / m³)", ytitle);
+  var trace2 = {
+    x: alldata["GNN"][1],
+    y: alldata["GNN"][0],
+    mode: "lines",
+    type: "scatter",
+    name: alldata["legends"][0],
+  };
+
+  var layout = get_layout(xtitle, ytitle, title);
 
   var plot_data = [trace1, trace2];
+
+  if (alldata["GNN"][2]) {
+    var trace3 = {
+      x: alldata["GNN"][2],
+      y: alldata["GNN"][0],
+      mode: "lines",
+      type: "scatter",
+      name: alldata["legends"][1],
+    };
+    var plot_data = [trace1, trace2, trace3];
+  }
 
   Plotly.newPlot(id, plot_data, layout, {
     responsive: true,
@@ -108,7 +136,12 @@ function get_phase_diagram(phase_diagram_data, xlegendpos, ytitle, id) {
   });
 }
 
-function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
+function get_ternary_lle_phase_diagram(
+  ternary_lle_phase_diagram_data,
+  temperature,
+  pressure,
+  id,
+) {
   var trace1 = {
     a: ternary_lle_phase_diagram_data["x0"],
     b: ternary_lle_phase_diagram_data["x1"],
@@ -117,6 +150,9 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
     type: "scatterternary",
     name: "Phase 1",
   };
+
+  var _ternaryTitle =
+    "LLE/VLE at T=" + temperature + " K and P=" + pressure + " Pa";
 
   var trace2 = {
     a: ternary_lle_phase_diagram_data["y0"],
@@ -127,11 +163,24 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
     name: "Phase 2",
   };
 
+  var trace3 = {
+    a: ternary_lle_phase_diagram_data["exp_x0"],
+    b: ternary_lle_phase_diagram_data["exp_x1"],
+    c: ternary_lle_phase_diagram_data["exp_x2"],
+    mode: "markers",
+    type: "scatterternary",
+    name: "ThermoML Archive**",
+    marker: {
+      symbol: "x",
+      color: "black",
+    },
+  };
+
   Plotly.newPlot(
     id,
-    [trace1, trace2],
+    [trace1, trace2, trace3],
     {
-      title: "",
+      title: _ternaryTitle,
       font: {
         family: "Times New Roman",
       },
@@ -168,53 +217,6 @@ function get_ternary_lle_phase_diagram(ternary_lle_phase_diagram_data, id) {
         },
       },
     },
-    {
-      responsive: true,
-      modeBarButtonsToRemove: ["select2d", "lasso2d", "toImage"],
-    },
-  );
-}
-
-function get_binary_phase_diagram(temperatures, phase1_x, phase2_x, title, id) {
-  var trace1 = {
-    x: phase1_x,
-    y: temperatures,
-    mode: "lines",
-    type: "scatter",
-    name: "Phase 1",
-  };
-  var trace2 = {
-    x: phase2_x,
-    y: temperatures,
-    mode: "lines",
-    type: "scatter",
-    name: "Phase 2",
-  };
-
-  Plotly.newPlot(
-    id,
-    [trace1, trace2],
-    get_layout(0, "x<sub>1</sub>", "Temperature (K)", title),
-    {
-      responsive: true,
-      modeBarButtonsToRemove: ["select2d", "lasso2d", "toImage"],
-    },
-  );
-}
-
-function get_binary_vle_phase_diagram_xy(x0, y0, id) {
-  var trace1 = {
-    x: x0,
-    y: y0,
-    mode: "lines",
-    type: "scatter",
-    name: "VLE",
-  };
-
-  Plotly.newPlot(
-    id,
-    [trace1],
-    get_layout(0, "x<sub>1</sub>", "y<sub>1</sub>"),
     {
       responsive: true,
       modeBarButtonsToRemove: ["select2d", "lasso2d", "toImage"],

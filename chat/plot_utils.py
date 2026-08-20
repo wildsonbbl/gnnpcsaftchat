@@ -1,5 +1,6 @@
 "helper for plotting"
 
+import json
 import uuid
 from typing import Any, Dict, List, Optional
 
@@ -67,12 +68,25 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     ]
 
     plot_data = {"x": temperatures.tolist(), "y": densities}
-    data = [[temperatures.tolist(), densities], [[], []]]
+    data = {
+        "GNN": [temperatures.tolist(), densities],
+        "legends": [
+            "GNN",
+            "GNN",
+            "ThermoML Archive**",
+        ],
+        "TML": [[], []],
+    }
     plot_id = f"den_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
-    getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
+    getplot(
+      {json.dumps(data)},
+      "Temperature (K)",
+      "Density (mol/m³)",
+      "Density at P={pressure} Pa",
+      "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -102,12 +116,25 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
     ]
 
     plot_data = {"x": temperatures.tolist(), "y": vapor_pressures}
-    data = [[temperatures.tolist(), vapor_pressures], [[], []]]
+    data = {
+        "GNN": [temperatures.tolist(), vapor_pressures],
+        "legends": [
+            "GNN",
+            "GNN",
+            "ThermoML Archive**",
+        ],
+        "TML": [[], []],
+    }
     plot_id = f"vp_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Vapor pressure (Pa) plot"></div>
     <script>
-    getplot({data},0,"Vapor Pressure (Pa)","{plot_id}");
+    getplot(
+        {json.dumps(data)},
+        "Temperature (K)",
+        "Vapor Pressure (Pa)",
+        "Vapor pressure",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -135,12 +162,25 @@ def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
     h_lv = [pure_h_lv_feos(parameters=parameters, state=[T]) for T in temperatures]
 
     plot_data = {"x": temperatures.tolist(), "y": h_lv}
-    data = [[temperatures.tolist(), h_lv], [[], []]]
+    data = {
+        "GNN": [temperatures.tolist(), h_lv],
+        "legends": [
+            "GNN",
+            "GNN",
+            "ThermoML Archive**",
+        ],
+        "TML": [[], []],
+    }
     plot_id = f"h_lv_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Enthalpy of vaporization (kJ/mol) plot"></div>
     <script>
-    getplot({data},0,"Enthalpy of vaporization (kJ/mol)","{plot_id}");
+    getplot(
+        {json.dumps(data)},
+        "Temperature (K)",
+        "Enthalpy of vaporization (kJ/mol)",
+        "Enthalpy of vaporization",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -167,12 +207,25 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
     st, temperatures = pure_surface_tension_feos(parameters=parameters, state=[t_min])
 
     plot_data = {"x": temperatures.tolist(), "y": st.tolist()}
-    data = [[temperatures.tolist(), st.tolist()], [[], []]]
+    data = {
+        "GNN": [temperatures.tolist(), st.tolist()],
+        "legends": [
+            "GNN",
+            "GNN",
+            "ThermoML Archive**",
+        ],
+        "TML": [[], []],
+    }
     plot_id = f"st_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Surface Tension (mN/m) plot"></div>
     <script>
-    getplot({data},0,"Surface Tension (mN/m)","{plot_id}");
+    getplot(
+        {json.dumps(data)},
+        "Temperature (K)",
+        "Surface Tension (mN/m)",
+        "Surface Tension",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -183,11 +236,11 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
     )
 
 
-def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
+def plot_pure_phase_diagram_t_rho_and_p_rho(smiles: str, t_min: float):
     """
     When asked, use this tool to show the user a pure-component
-    temperature (K) vs density (mol/m³) phase diagram
-    from t_min up to the critical temperature.
+    temperature (K) vs density (mol/m³) and pressure (Pa) vs density (mol/m³)
+    phase diagram from t_min up to the critical temperature.
 
     Args:
       smiles (str): SMILES of the molecule.
@@ -201,15 +254,54 @@ def plot_pure_phase_diagram_t_rho(smiles: str, t_min: float):
 
     plot_data = {
         "temperature": output["temperature"],
+        "pressure": output.get("pressure", output.get("pressure vapor", [])),
         "density_liquid": output["density liquid"],
         "density_vapor": output["density vapor"],
     }
-    data = [output["temperature"], output["density liquid"], output["density vapor"]]
-    plot_id = f"t_rho_diagram_{uuid.uuid4().hex}"
+    data_t_rho = {
+        "GNN": [
+            output["temperature"],
+            output["density liquid"],
+            output["density vapor"],
+        ],
+        "legends": [
+            "GNN - Liquid",
+            "GNN - Vapor",
+            "Exp. Bubble P. (ThermoML Archive**)",
+        ],
+        "TML": [[], []],
+    }
+    data_p_rho = {
+        "GNN": [
+            output.get("pressure", output.get("pressure vapor", [])),
+            output["density liquid"],
+            output["density vapor"],
+        ],
+        "legends": [
+            "GNN - Liquid",
+            "GNN - Vapor",
+            "Exp. Bubble P. (ThermoML Archive**)",
+        ],
+        "TML": [[], []],
+    }
+    plot_id_t_rho = f"t_rho_diagram_{uuid.uuid4().hex}"
+    plot_id_p_rho = f"p_rho_diagram_{uuid.uuid4().hex}"
     html = f"""
-    <div id="{plot_id}" alt="Phase diagram plot"></div>
+    <div class="mb-2" id="{plot_id_t_rho}" alt="Phase diagram plot T-rho"></div>
+    <div id="{plot_id_p_rho}" alt="Phase diagram plot P-rho"></div>
     <script>
-    get_phase_diagram({data},0,"Temperature (K)","{plot_id}");
+    getplot_fixed_y(
+        {json.dumps(data_t_rho)},
+        "Density (mol/m³)",
+        "Temperature (K)",
+        "Phase Diagram T-rho",
+        "{plot_id_t_rho}");
+    getplot_fixed_y(
+        {json.dumps(data_p_rho)},
+        "Density (mol/m³)",
+        "Pressure (Pa)",
+        "Phase Diagram P-rho",
+        "{plot_id_p_rho}");
     </script>
     """
     return _make_plot_response(
@@ -254,12 +346,26 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
     ]
 
     plot_data = {"x": temperatures.tolist(), "y": densities}
-    data = [[temperatures.tolist(), densities], [[], []]]
+    data = {
+        "GNN": [temperatures.tolist(), densities],
+        "legends": [
+            "GNN",
+            "GNN",
+            "ThermoML Archive**",
+        ],
+        "TML": [[], []],
+    }
+
     plot_id = f"den_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Density plot (mol/m³)"></div>
     <script>
-    getplot({data},0,"Liquid Density (mol/m³)","{plot_id}");
+    getplot(
+        {json.dumps(data)},
+        "Temperature (K)",
+        "Density plot (mol/m³)",
+        "Density at P={pressure} Pa and mole fractions={mole_fractions}",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -304,20 +410,25 @@ def plot_mix_vle_pt(
     bubble, dew = [list(x) for x in zip(*results)]
 
     plot_data = {"x": temperatures.tolist(), "bubble": bubble, "dew": dew}
-    data_bubble = [[temperatures.tolist(), bubble], [[], []]]
+    data = {
+        "GNN": [temperatures.tolist(), bubble, dew],
+        "legends": [
+            "GNN Bubble P.",
+            "GNN Dew P.",
+            "Exp. Bubble P. (ThermoML Archive**)",
+        ],
+        "TML": [[], []],
+    }
     plot_id = f"bubble_dew_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Bubble/Dew points (Pa)"></div>
     <script>
-    getplot({data_bubble},0,"Pressure (Pa)","{plot_id}",trace_name = "Bubble Curve");
-    var trace2 = {{
-              x: {temperatures.tolist()},
-              y: {dew},
-              mode: "lines",
-              type: "scatter",
-              name: "Dew curve",
-            }};
-    Plotly.addTraces("{plot_id}", trace2);
+    getplot(
+        {json.dumps(data)},
+        "Temperature (K)",
+        "Pressure (Pa)",
+        "VLE at mole fractions={mole_fractions}",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -370,16 +481,25 @@ def plot_binary_lle_txx(
         "x0": output["x0"],
         "y0": output["y0"],
     }
+    data = {
+        "GNN": [
+            output["temperature"],
+            output["x0"],
+            output["y0"],
+        ],
+        "legends": ["GNN - Phase 1", "GNN - Phase 2", "ThermoML Archive**"],
+        "TML": [[], []],
+    }
     plot_id = f"b_lle_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Binary LLE diagram"></div>
     <script>
-    get_binary_phase_diagram(
-    {output["temperature"]},
-    {output["x0"]},
-    {output["y0"]},
-    "T-x-x",
-    "{plot_id}");
+    getplot_fixed_y(
+        {json.dumps(data)},
+        "x<sub>1</sub>",
+        "Temperature (K)",
+        "LLE at P={pressure} Pa",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -422,16 +542,25 @@ def plot_binary_vle_txy(
         "x0": output["x0"],
         "y0": output["y0"],
     }
+    data = {
+        "GNN": [
+            output["temperature"],
+            output["x0"],
+            output["y0"],
+        ],
+        "legends": ["GNN - Phase 1", "GNN - Phase 2", "ThermoML Archive**"],
+        "TML": [[], []],
+    }
     plot_id = f"b_vle_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Binary VLE diagram"></div>
     <script>
-    get_binary_phase_diagram(
-    {output["temperature"]},
-    {output["x0"]},
-    {output["y0"]},
-    "T-x-y",
-    "{plot_id}");
+    getplot_fixed_y(
+        {json.dumps(data)},
+        "x<sub>1</sub>, y<sub>1</sub>",
+        "Temperature (K)",
+        "VLE at P={pressure} Pa",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -470,14 +599,24 @@ def plot_binary_vle_xy(
     )
 
     plot_data = {"x0": output["x0"], "y0": output["y0"]}
+    data = {
+        "GNN": [
+            output["x0"],
+            output["y0"],
+        ],
+        "legends": ["GNN", "GNN", "ThermoML Archive**"],
+        "TML": [[], []],
+    }
     plot_id = f"b_vle_xy_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Binary VLE diagram"></div>
     <script>
-    get_binary_vle_phase_diagram_xy(
-    {output["x0"]},
-    {output["y0"]},
-    "{plot_id}");
+    getplot(
+        {json.dumps(data)},
+        "x<sub>1</sub>",
+        "y<sub>1</sub>",
+        "VLE at P={pressure} Pa",
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
@@ -554,15 +693,17 @@ def plot_ternary_lle_or_vle(
         state=[temperature, pressure],
         kij_matrix=kij_matrix,
     )
-
+    output.update({"exp_x0": [], "exp_x1": [], "exp_x2": []})
     plot_data = output
     plot_id = f"t_lle_plot_{uuid.uuid4().hex}"
     html = f"""
     <div id="{plot_id}" alt="Ternary LLE/VLE diagram"></div>
     <script>
     get_ternary_lle_phase_diagram(
-    {output},
-    "{plot_id}");
+        {json.dumps(output)},
+        {temperature},
+        {pressure},
+        "{plot_id}");
     </script>
     """
     return _make_plot_response(
