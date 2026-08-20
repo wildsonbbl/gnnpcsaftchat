@@ -26,11 +26,6 @@ else
 	export PYTHONPATH="$app_dir"
 fi
 
-## create tag and release
-# git tag $version
-# git push origin $version
-# gh release create -d --generate-notes --latest --verify-tag $version
-
 ## create package
 uv pip install -r requirements.txt
 uv pip install pywebview[qt]
