@@ -31,3 +31,4 @@ djlint
 pyinstaller
 pylint-django
 pywebview
+scipy
