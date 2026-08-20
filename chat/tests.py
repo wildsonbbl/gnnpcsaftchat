@@ -5,11 +5,19 @@ import os
 import uuid
 from unittest.mock import patch
 
+import numpy as np
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from .models import ChatSession
-from .plot_utils import plot_pure_density
+from .plot_utils import (
+    _experimental_plot_data,
+    plot_mix_density,
+    plot_pure_density,
+    plot_pure_surface_tension,
+    plot_pure_vapor_pressure,
+    pop_plot_html,
+)
 
 
 class ViewsTestCase(TestCase):
@@ -39,6 +47,13 @@ class ViewsTestCase(TestCase):
 class PlotUtilsContractTest(TestCase):
     """Test that plotting helper tools return structured, agent-safe payloads."""
 
+    def _plot_html(self, result):
+        """Return and remove the rendered HTML associated with a plot response."""
+        html = pop_plot_html(result["plot_id"])
+        if html is None:
+            raise AssertionError("Plot HTML was not stored")
+        return html
+
     @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={"mock": "params"})
     @patch(
         "chat.plot_utils.pure_den_feos",
@@ -56,6 +71,74 @@ class PlotUtilsContractTest(TestCase):
         self.assertIn("data", result)
         self.assertNotIn("html", result)
         self.assertEqual(result["plot_type"], "density")
+
+    def test_experimental_plot_data_applies_axis_scaling(self):
+        """Experimental values are converted independently on each axis."""
+        data = np.array([[300.0, 2.5], [310.0, 3.0]])
+
+        self.assertEqual(
+            _experimental_plot_data(data, y_scale=1000.0),
+            [[300.0, 310.0], [2500.0, 3000.0]],
+        )
+
+    @patch("chat.plot_utils.retrieve_rho_pure_data")
+    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
+    @patch("chat.plot_utils.pure_den_feos", return_value=1000.0)
+    def test_pure_density_uses_kpa_for_experimental_lookup(
+        self, _mock_density, _mock_predict, mock_retrieve
+    ):
+        """The pure-density lookup receives pressure converted from Pa to kPa."""
+        mock_retrieve.return_value = np.array([[280.0, 900.0]])
+
+        result = plot_pure_density("CC", 280.0, 280.0, 101325.0)
+
+        mock_retrieve.assert_called_once_with(smiles="CC", pressure=101.325)
+        self.assertIn('"TML": [[280.0], [900.0]]', self._plot_html(result))
+
+    @patch("chat.plot_utils.retrieve_vp_pure_data")
+    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
+    @patch("chat.plot_utils.pure_vp_feos", return_value=2000.0)
+    def test_pure_vapor_pressure_converts_kpa_to_pa(
+        self, _mock_vapor_pressure, _mock_predict, mock_retrieve
+    ):
+        """Experimental vapor pressure is rendered in Pa, not source kPa."""
+        mock_retrieve.return_value = np.array([[300.0, 2.5]])
+
+        result = plot_pure_vapor_pressure("CC", 300.0, 300.0)
+
+        self.assertIn("[300.0], [2500.0]", self._plot_html(result))
+
+    @patch("chat.plot_utils.retrieve_st_pure_data")
+    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
+    @patch(
+        "chat.plot_utils.pure_surface_tension_feos",
+        return_value=(np.array([10.0]), np.array([300.0])),
+    )
+    def test_surface_tension_converts_n_per_m_to_mn_per_m(
+        self, _mock_surface_tension, _mock_predict, mock_retrieve
+    ):
+        """Experimental surface tension is rendered in mN/m."""
+        mock_retrieve.return_value = np.array([[300.0, 0.025]])
+
+        result = plot_pure_surface_tension("CC", 300.0)
+
+        self.assertIn("[300.0], [25.0]", self._plot_html(result))
+
+    @patch("chat.plot_utils.retrieve_rho_binary_data")
+    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
+    @patch("chat.plot_utils.mix_den_feos", return_value=900.0)
+    def test_mixture_density_keeps_experimental_density_units(
+        self, _mock_density, _mock_predict, mock_retrieve
+    ):
+        """Experimental mixture density is already returned in mol/m3."""
+        mock_retrieve.return_value = np.array([[280.0, 850.0]])
+
+        result = plot_mix_density(["CC", "O"], 280.0, 280.0, 101325.0, [0.5, 0.5])
+
+        mock_retrieve.assert_called_once_with(
+            smiles_list=["CC", "O"], pressure=101.325, x1=0.5
+        )
+        self.assertIn("[280.0], [850.0]", self._plot_html(result))
 
 
 class APIViewsTestCase(TestCase):
