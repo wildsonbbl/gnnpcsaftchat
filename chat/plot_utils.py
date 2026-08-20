@@ -566,10 +566,10 @@ def plot_ternary_lle_or_vle(
     </script>
     """
     return _make_plot_response(
-        plot_type="ternary_lle",
+        plot_type="ternary_lle_or_vle",
         data=plot_data,
         html=html,
-        message="Ternary LLE diagram generated successfully.",
+        message="Ternary LLE/VLE diagram generated successfully.",
     )
 
 
