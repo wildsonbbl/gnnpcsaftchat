@@ -20,7 +20,34 @@ from gnnepcsaft.pcsaft.pcsaft_feos import (
 from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
 from gnnepcsaft_mcp_server.utils import predict_pcsaft_parameters
 
+from .utils_data import (
+    retrieve_bubble_pressure_data,
+    retrieve_lle_binary_data,
+    retrieve_lle_ternary_data,
+    retrieve_rho_binary_data,
+    retrieve_rho_pure_data,
+    retrieve_rho_ternary_data,
+    retrieve_st_pure_data,
+    retrieve_vle_binary_data,
+    retrieve_vle_ternary_data,
+    retrieve_vp_pure_data,
+)
+
 PLOT_HTML_STORE: Dict[str, str] = {}
+PA_PER_KPA = 1000.0
+MN_PER_N = 1000.0
+
+
+def _experimental_plot_data(
+    data: Optional[np.ndarray], x_scale: float = 1.0, y_scale: float = 1.0
+) -> List[List[float]]:
+    """Convert experimental rows into the frontend's ``[x, y]`` format."""
+    if data is None or data.size == 0:
+        return [[], []]
+    converted = data.astype(np.float64, copy=True)
+    converted[:, 0] *= x_scale
+    converted[:, 1] *= y_scale
+    return converted.T.tolist()
 
 
 def _make_plot_response(
@@ -66,6 +93,7 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     densities = [
         pure_den_feos(parameters=parameters, state=[T, pressure]) for T in temperatures
     ]
+    exp_data = retrieve_rho_pure_data(smiles=smiles, pressure=pressure / PA_PER_KPA)
 
     plot_data = {"x": temperatures.tolist(), "y": densities}
     data = {
@@ -75,7 +103,7 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
             "GNN",
             "ThermoML Archive**",
         ],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(exp_data),
     }
     plot_id = f"den_plot_{uuid.uuid4().hex}"
     html = f"""
@@ -114,6 +142,7 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
     vapor_pressures = [
         pure_vp_feos(parameters=parameters, state=[T]) for T in temperatures
     ]
+    exp_data = retrieve_vp_pure_data(smiles=smiles)
 
     plot_data = {"x": temperatures.tolist(), "y": vapor_pressures}
     data = {
@@ -123,7 +152,7 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
             "GNN",
             "ThermoML Archive**",
         ],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(exp_data, y_scale=PA_PER_KPA),
     }
     plot_id = f"vp_plot_{uuid.uuid4().hex}"
     html = f"""
@@ -205,6 +234,7 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
     parameters = predict_pcsaft_parameters(smiles)
 
     st, temperatures = pure_surface_tension_feos(parameters=parameters, state=[t_min])
+    exp_data = retrieve_st_pure_data(smiles=smiles)
 
     plot_data = {"x": temperatures.tolist(), "y": st.tolist()}
     data = {
@@ -214,7 +244,7 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
             "GNN",
             "ThermoML Archive**",
         ],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(exp_data, y_scale=MN_PER_N),
     }
     plot_id = f"st_plot_{uuid.uuid4().hex}"
     html = f"""
@@ -345,6 +375,22 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
         for T in temperatures
     ]
 
+    if len(smiles_list) == 2:
+        exp_data = retrieve_rho_binary_data(
+            smiles_list=smiles_list,
+            pressure=pressure / PA_PER_KPA,
+            x1=mole_fractions[0],
+        )
+    elif len(smiles_list) == 3:
+        exp_data = retrieve_rho_ternary_data(
+            smiles_list=smiles_list,
+            pressure=pressure / PA_PER_KPA,
+            x1=mole_fractions[0],
+            x2=mole_fractions[1],
+        )
+    else:
+        exp_data = None
+
     plot_data = {"x": temperatures.tolist(), "y": densities}
     data = {
         "GNN": [temperatures.tolist(), densities],
@@ -353,7 +399,7 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
             "GNN",
             "ThermoML Archive**",
         ],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(exp_data),
     }
 
     plot_id = f"den_plot_{uuid.uuid4().hex}"
@@ -409,6 +455,12 @@ def plot_mix_vle_pt(
     ]
     bubble, dew = [list(x) for x in zip(*results)]
 
+    exp_data = (
+        retrieve_bubble_pressure_data(smiles_list, mole_fractions[0])
+        if len(smiles_list) == 2
+        else None
+    )
+
     plot_data = {"x": temperatures.tolist(), "bubble": bubble, "dew": dew}
     data = {
         "GNN": [temperatures.tolist(), bubble, dew],
@@ -417,7 +469,7 @@ def plot_mix_vle_pt(
             "GNN Dew P.",
             "Exp. Bubble P. (ThermoML Archive**)",
         ],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(exp_data, y_scale=PA_PER_KPA),
     }
     plot_id = f"bubble_dew_plot_{uuid.uuid4().hex}"
     html = f"""
@@ -488,7 +540,9 @@ def plot_binary_lle_txx(
             output["y0"],
         ],
         "legends": ["GNN - Phase 1", "GNN - Phase 2", "ThermoML Archive**"],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(
+            retrieve_lle_binary_data(smiles_list, pressure / PA_PER_KPA)
+        ),
     }
     plot_id = f"b_lle_plot_{uuid.uuid4().hex}"
     html = f"""
@@ -549,7 +603,9 @@ def plot_binary_vle_txy(
             output["y0"],
         ],
         "legends": ["GNN - Phase 1", "GNN - Phase 2", "ThermoML Archive**"],
-        "TML": [[], []],
+        "TML": _experimental_plot_data(
+            retrieve_vle_binary_data(smiles_list, pressure / PA_PER_KPA)
+        ),
     }
     plot_id = f"b_vle_plot_{uuid.uuid4().hex}"
     html = f"""
@@ -693,7 +749,27 @@ def plot_ternary_lle_or_vle(
         state=[temperature, pressure],
         kij_matrix=kij_matrix,
     )
-    output.update({"exp_x0": [], "exp_x1": [], "exp_x2": []})
+    experimental_rows = [
+        data
+        for data in (
+            retrieve_lle_ternary_data(smiles_list, pressure / PA_PER_KPA, temperature),
+            retrieve_vle_ternary_data(smiles_list, pressure / PA_PER_KPA, temperature),
+        )
+        if data is not None and data.size > 0
+    ]
+    if experimental_rows:
+        experimental_data = np.vstack(experimental_rows)
+        output.update(
+            {
+                "exp_x0": experimental_data[:, 0].tolist(),
+                "exp_x1": experimental_data[:, 1].tolist(),
+                "exp_x2": (
+                    1.0 - experimental_data[:, 0] - experimental_data[:, 1]
+                ).tolist(),
+            }
+        )
+    else:
+        output.update({"exp_x0": [], "exp_x1": [], "exp_x2": []})
     plot_data = output
     plot_id = f"t_lle_plot_{uuid.uuid4().hex}"
     html = f"""
