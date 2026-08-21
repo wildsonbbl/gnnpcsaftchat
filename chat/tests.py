@@ -126,9 +126,8 @@ class PlotUtilsContractTest(TestCase):
 
     @patch("chat.utils_plot.retrieve_rho_binary_data")
     @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
-    @patch("chat.utils_plot.mix_den_feos", return_value=900.0)
     def test_mixture_density_keeps_experimental_density_units(
-        self, _mock_density, _mock_predict, mock_retrieve
+        self, _mock_predict, mock_retrieve
     ):
         """Experimental mixture density is already returned in mol/m3."""
         mock_retrieve.return_value = np.array([[280.0, 850.0]])

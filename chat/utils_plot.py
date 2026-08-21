@@ -6,11 +6,6 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from gnnepcsaft.pcsaft.pcsaft_feos import (
-    mix_den_feos,
-    mix_lle_diagram_feos,
-    mix_lle_feos,
-    mix_vle_diagram_feos,
-    mix_vp_feos,
     phase_diagram_feos,
     pure_den_feos,
     pure_h_lv_feos,
@@ -34,7 +29,19 @@ from .utils_data import (
     retrieve_vle_ternary_tx_fixed_data,
     retrieve_vp_pure_data,
 )
-from .utils_mix import TernaryVleTxParams, mix_ternary_vle_tx_fixed, mix_vle_pxy
+from .utils_mix import (
+    MixDenParams,
+    MixLLEParams,
+    MixVpParams,
+    TernaryVleTxParams,
+    mix_den,
+    mix_lle,
+    mix_ternary_lle,
+    mix_ternary_vle_tx_fixed,
+    mix_vle,
+    mix_vle_pxy,
+    mix_vp,
+)
 
 PLOT_HTML_STORE: Dict[str, str] = {}
 PA_PER_KPA = 1000.0
@@ -352,6 +359,7 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
     pressure: float,
     mole_fractions: List[float],
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a plot of density (mol/m³) for a mixture.
@@ -363,20 +371,21 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
       pressure (float): system pressure (Pa)
       mole_fractions (List[float]): mole fractions list
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
 
-    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
-
-    densities = [
-        mix_den_feos(
-            parameters=parameters,
-            state=[T, pressure, *mole_fractions],
-            kij_matrix=kij_matrix,
+    temperatures, densities = mix_den(
+        MixDenParams(
+            smiles_list=smiles_list,
+            mole_fractions=mole_fractions,
+            kij_matrix=kij_matrix if kij_matrix else [],
+            min_temp=t_min,
+            max_temp=t_max,
+            pressure=pressure,
+            npoints=npoints,
         )
-        for T in temperatures
-    ]
+    )
 
     if len(smiles_list) == 2:
         exp_data = retrieve_rho_binary_data(
@@ -394,9 +403,9 @@ def plot_mix_density(  # pylint: disable=R0913,R0917
     else:
         exp_data = None
 
-    plot_data = {"x": temperatures.tolist(), "y": densities}
+    plot_data = {"x": temperatures, "y": densities}
     data = {
-        "GNN": [temperatures.tolist(), densities],
+        "GNN": [temperatures, densities],
         "legends": [
             "GNN",
             "GNN",
@@ -431,6 +440,7 @@ def plot_mix_vle_pt(
     t_max: float,
     mole_fractions: List[float],
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a plot of Bubble/Dew points (Pa) for a mixture
@@ -442,21 +452,20 @@ def plot_mix_vle_pt(
       t_max (float): maximun temperature (K) to calculate Bubble/Dew points (Pa)
       mole_fractions (List[float]): mole fractions list [X1, X2, X3, ...]
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
 
-    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
-
-    results = [
-        mix_vp_feos(
-            parameters=parameters,
-            state=[T, 0.0, *mole_fractions],
-            kij_matrix=kij_matrix,
+    temperatures, bubble, dew = mix_vp(
+        MixVpParams(
+            smiles_list=smiles_list,
+            mole_fractions=mole_fractions,
+            kij_matrix=kij_matrix if kij_matrix else [],
+            min_temp=t_min,
+            max_temp=t_max,
+            npoints=npoints,
         )
-        for T in temperatures
-    ]
-    bubble, dew = [list(x) for x in zip(*results)]
+    )
 
     exp_data = (
         retrieve_bubble_pressure_data(smiles_list, mole_fractions[0])
@@ -464,9 +473,9 @@ def plot_mix_vle_pt(
         else None
     )
 
-    plot_data = {"x": temperatures.tolist(), "bubble": bubble, "dew": dew}
+    plot_data = {"x": temperatures, "bubble": bubble, "dew": dew}
     data = {
-        "GNN": [temperatures.tolist(), bubble, dew],
+        "GNN": [temperatures, bubble, dew],
         "legends": [
             "GNN Bubble P.",
             "GNN Dew P.",
@@ -500,6 +509,7 @@ def plot_binary_lle_txx(
     pressure: float,
     mole_fractions: List[float],
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a T-x-x LLE diagram for a binary mixture
@@ -513,23 +523,27 @@ def plot_binary_lle_txx(
       pressure (float): System pressure (Pa)
       mole_fractions (List[float]): Global mole fractions [x1, x2] used as starting value
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
     assert (
         len(smiles_list) == 2
     ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
-
-    output = mix_lle_diagram_feos(
-        parameters=parameters,
-        state=[
-            *temp_min_and_max,
-            pressure,
-            *mole_fractions,
-        ],
-        kij_matrix=kij_matrix,
+    output = mix_lle(
+        MixLLEParams(
+            smiles_list=smiles_list,
+            mole_fractions=mole_fractions,
+            kij_matrix=kij_matrix if kij_matrix else [],
+            temperature_min=min(temp_min_and_max),
+            temperature_max=max(temp_min_and_max),
+            pressure=pressure,
+            npoints=npoints,
+        )
     )
+
+    if output is None:
+        return "Failed to calculate LLE T-x-x for these conditions"
 
     plot_data = {
         "temperature": output["temperature"],
@@ -571,6 +585,7 @@ def plot_binary_vle_txy(
     smiles_list: List[str],
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a T-x-y VLE diagram for a binary mixture
@@ -580,19 +595,22 @@ def plot_binary_vle_txy(
       smiles_list (List[str]): List with binary SMILES [SMILES_1, SMILES_2].
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
     assert (
         len(smiles_list) == 2
     ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
-
-    output = mix_vle_diagram_feos(
-        parameters=parameters,
-        state=[pressure],
-        kij_matrix=kij_matrix,
+    output = mix_vle(
+        smiles_list=smiles_list,
+        kij_matrix=kij_matrix if kij_matrix else [],
+        pressure=pressure,
+        npoints=npoints,
     )
+
+    if output is None:
+        return "Failed to calculate VLE T-x-y for these conditions"
 
     plot_data = {
         "temperature": output["temperature"],
@@ -634,6 +652,7 @@ def plot_binary_vle_xy(
     smiles_list: List[str],
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a x-y VLE diagram for a binary mixture
@@ -643,19 +662,22 @@ def plot_binary_vle_xy(
       smiles_list (List[str]): List with binary SMILES [SMILES_1, SMILES_2].
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
     assert (
         len(smiles_list) == 2
     ), f"smiles_list should have 2 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
-
-    output = mix_vle_diagram_feos(
-        parameters=parameters,
-        state=[pressure],
-        kij_matrix=kij_matrix,
+    output = mix_vle(
+        smiles_list=smiles_list,
+        kij_matrix=kij_matrix if kij_matrix else [],
+        pressure=pressure,
+        npoints=npoints,
     )
+
+    if output is None:
+        return "Failed to calculate VLE x-y for these conditions"
 
     plot_data = {"x0": output["x0"], "y0": output["y0"]}
     data = {
@@ -690,6 +712,7 @@ def plot_binary_vle_pxy(
     smiles_list: List[str],
     temperature: float,
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a P-x-y VLE diagram for a binary mixture
@@ -699,6 +722,7 @@ def plot_binary_vle_pxy(
       smiles_list (List[str]): List with binary SMILES [SMILES_1, SMILES_2].
       temperature (float): System Temperature (K)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
     assert (
@@ -707,9 +731,9 @@ def plot_binary_vle_pxy(
 
     xs, bps, dps = mix_vle_pxy(
         smiles_list=smiles_list,
-        kij_matrix=kij_matrix if kij_matrix else [[0.0, 0.0], [0.0, 0.0]],
+        kij_matrix=kij_matrix if kij_matrix else [],
         temperature=temperature,
-        npoints=100,
+        npoints=npoints,
     )
 
     plot_data = {
@@ -757,6 +781,7 @@ def plot_ternary_vle_pxy(
     temperature: float,
     solvent_ratio: float,
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 100,
 ):
     """
     When asked, use this tool to show the user a P-x-y VLE diagram for a ternary mixture
@@ -769,6 +794,7 @@ def plot_ternary_vle_pxy(
       temperature (float): System Temperature (K).
       solvent_ratio (float): Solvent_ratio = x2 / (x2 + x3).
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
     assert (
@@ -778,14 +804,10 @@ def plot_ternary_vle_pxy(
     xs, bps, dps = mix_ternary_vle_tx_fixed(
         TernaryVleTxParams(
             smiles_list=smiles_list,
-            kij_matrix=(
-                kij_matrix
-                if kij_matrix
-                else [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
-            ),
+            kij_matrix=kij_matrix if kij_matrix else [],
             temperature=temperature,
             solvent_ratio=solvent_ratio,
-            npoints=100,
+            npoints=npoints,
         )
     )
 
@@ -830,49 +852,12 @@ def plot_ternary_vle_pxy(
     )
 
 
-def _get_ternary_lle_data(
-    params: List[List[float]],
-    state: List[float],
-    kij_matrix: Optional[List[List[float]]] = None,
-) -> Dict[str, List[float]]:
-    t, p = state  # Temperatura (K) e pressão (Pa)
-
-    def _grid(n_pts: int = 25):
-        xi = np.linspace(1e-5, 0.999, n_pts, dtype=np.float64)
-        x1_m, x2_m = np.meshgrid(xi, xi, indexing="xy")
-        x3_m = 1.0 - x1_m - x2_m
-        return x1_m, x2_m, x3_m, (x3_m >= 0.0)
-
-    def _collect_tie_lines(x1_m, x2_m, x3_m, mask):
-        valid_idx = np.argwhere(mask)
-        ternary_data = {"x0": [], "x1": [], "x2": [], "y0": [], "y1": [], "y2": []}
-        for i, j in valid_idx:
-            try:
-                lle = mix_lle_feos(
-                    params,
-                    [t, p, x1_m[i, j].item(), x2_m[i, j].item(), x3_m[i, j].item()],
-                    kij_matrix,
-                )
-            except (RuntimeError, ValueError):
-                continue
-            # For LLE, y is one phase and x is the other phase
-            ternary_data["x0"].extend(lle["x0"])
-            ternary_data["x1"].extend(lle["x1"])
-            ternary_data["x2"].extend(lle["x2"])
-            ternary_data["y0"].extend(lle["y0"])
-            ternary_data["y1"].extend(lle["y1"])
-            ternary_data["y2"].extend(lle["y2"])
-        return ternary_data
-
-    x1, x2, x3, mask = _grid()
-    return _collect_tie_lines(x1, x2, x3, mask)
-
-
 def plot_ternary_lle_or_vle(
     smiles_list: List[str],
     temperature: float,
     pressure: float,
     kij_matrix: Optional[List[List[float]]] = None,
+    npoints: int = 25,
 ):
     """
     When asked, use this tool to show the user a LLE or VLE diagram for a ternary mixture
@@ -883,18 +868,19 @@ def plot_ternary_lle_or_vle(
       temperature (float): System temperature (K)
       pressure (float): System pressure (Pa)
       kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+      npoints (int): Number of data points to calculate. Default is 25 data points.
 
     """
     assert (
         len(smiles_list) == 3
     ), f"smiles_list should have 3 SMILES, got {len(smiles_list)} instead"
 
-    parameters = [predict_pcsaft_parameters(smiles) for smiles in smiles_list]
-
-    output = _get_ternary_lle_data(
-        params=parameters,
-        state=[temperature, pressure],
-        kij_matrix=kij_matrix,
+    output = mix_ternary_lle(
+        smiles_list=smiles_list,
+        kij_matrix=kij_matrix if kij_matrix else [],
+        temperature=temperature,
+        pressure=pressure,
+        npoints=npoints,
     )
     experimental_rows = [
         data
