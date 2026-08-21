@@ -10,7 +10,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 
 from .models import ChatSession
-from .plot_utils import (
+from .utils_plot import (
     _experimental_plot_data,
     plot_mix_density,
     plot_pure_density,
@@ -54,9 +54,9 @@ class PlotUtilsContractTest(TestCase):
             raise AssertionError("Plot HTML was not stored")
         return html
 
-    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={"mock": "params"})
+    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={"mock": "params"})
     @patch(
-        "chat.plot_utils.pure_den_feos",
+        "chat.utils_plot.pure_den_feos",
         side_effect=lambda parameters, state: float(state[0]) * 2.0,
     )
     def test_plot_pure_density_returns_agent_safe_payload(
@@ -81,9 +81,9 @@ class PlotUtilsContractTest(TestCase):
             [[300.0, 310.0], [2500.0, 3000.0]],
         )
 
-    @patch("chat.plot_utils.retrieve_rho_pure_data")
-    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
-    @patch("chat.plot_utils.pure_den_feos", return_value=1000.0)
+    @patch("chat.utils_plot.retrieve_rho_pure_data")
+    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
+    @patch("chat.utils_plot.pure_den_feos", return_value=1000.0)
     def test_pure_density_uses_kpa_for_experimental_lookup(
         self, _mock_density, _mock_predict, mock_retrieve
     ):
@@ -95,9 +95,9 @@ class PlotUtilsContractTest(TestCase):
         mock_retrieve.assert_called_once_with(smiles="CC", pressure=101.325)
         self.assertIn('"TML": [[280.0], [900.0]]', self._plot_html(result))
 
-    @patch("chat.plot_utils.retrieve_vp_pure_data")
-    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
-    @patch("chat.plot_utils.pure_vp_feos", return_value=2000.0)
+    @patch("chat.utils_plot.retrieve_vp_pure_data")
+    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
+    @patch("chat.utils_plot.pure_vp_feos", return_value=2000.0)
     def test_pure_vapor_pressure_converts_kpa_to_pa(
         self, _mock_vapor_pressure, _mock_predict, mock_retrieve
     ):
@@ -108,10 +108,10 @@ class PlotUtilsContractTest(TestCase):
 
         self.assertIn("[300.0], [2500.0]", self._plot_html(result))
 
-    @patch("chat.plot_utils.retrieve_st_pure_data")
-    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
+    @patch("chat.utils_plot.retrieve_st_pure_data")
+    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
     @patch(
-        "chat.plot_utils.pure_surface_tension_feos",
+        "chat.utils_plot.pure_surface_tension_feos",
         return_value=(np.array([10.0]), np.array([300.0])),
     )
     def test_surface_tension_converts_n_per_m_to_mn_per_m(
@@ -124,9 +124,9 @@ class PlotUtilsContractTest(TestCase):
 
         self.assertIn("[300.0], [25.0]", self._plot_html(result))
 
-    @patch("chat.plot_utils.retrieve_rho_binary_data")
-    @patch("chat.plot_utils.predict_pcsaft_parameters", return_value={})
-    @patch("chat.plot_utils.mix_den_feos", return_value=900.0)
+    @patch("chat.utils_plot.retrieve_rho_binary_data")
+    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
+    @patch("chat.utils_plot.mix_den_feos", return_value=900.0)
     def test_mixture_density_keeps_experimental_density_units(
         self, _mock_density, _mock_predict, mock_retrieve
     ):

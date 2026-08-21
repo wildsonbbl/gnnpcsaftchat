@@ -10,8 +10,8 @@ from . import logger
 from .agents_utils import is_api_key_valid
 from .chat_utils import USER_ID, markdown_to_html
 from .models import ChatSession
-from .plot_utils import pop_plot_html
 from .session_operations import ChatSessionsDBOperations
+from .utils_plot import pop_plot_html
 
 
 class ChatConsumerMessagingOperations(ChatSessionsDBOperations):

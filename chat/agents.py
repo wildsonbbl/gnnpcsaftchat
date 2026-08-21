@@ -13,7 +13,13 @@ from gnnepcsaft_mcp_server.utils import (
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 
-from .plot_utils import (
+from .utils_data import (
+    retrieve_available_data_binary,
+    retrieve_available_data_pure,
+    retrieve_available_data_ternary,
+)
+from .utils_kij import optimize_binary_kij_with_vle
+from .utils_plot import (
     plot_3d_molecule,
     plot_binary_lle_txx,
     plot_binary_vle_pxy,
@@ -29,12 +35,6 @@ from .plot_utils import (
     plot_ternary_lle_or_vle,
     plot_ternary_vle_pxy,
 )
-from .utils_data import (
-    retrieve_available_data_binary,
-    retrieve_available_data_pure,
-    retrieve_available_data_ternary,
-)
-from .utils_kij import optimize_binary_kij_with_vle
 
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "False"
 
