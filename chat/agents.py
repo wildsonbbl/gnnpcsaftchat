@@ -16,6 +16,7 @@ from google.adk.models.lite_llm import LiteLlm
 from .plot_utils import (
     plot_3d_molecule,
     plot_binary_lle_txx,
+    plot_binary_vle_pxy,
     plot_binary_vle_txy,
     plot_binary_vle_xy,
     plot_mix_density,
@@ -54,6 +55,7 @@ all_tools = [
     plot_binary_lle_txx,
     plot_binary_vle_txy,
     plot_binary_vle_xy,
+    plot_binary_vle_pxy,
     plot_ternary_lle_or_vle,
     optimize_binary_kij_with_vle,
     retrieve_available_data_pure,
