@@ -27,6 +27,11 @@ from .plot_utils import (
     plot_pure_vapor_pressure,
     plot_ternary_lle_or_vle,
 )
+from .utils_data import (
+    retrieve_available_data_binary,
+    retrieve_available_data_pure,
+    retrieve_available_data_ternary,
+)
 from .utils_kij import optimize_binary_kij_with_vle
 
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "False"
@@ -51,6 +56,9 @@ all_tools = [
     plot_binary_vle_xy,
     plot_ternary_lle_or_vle,
     optimize_binary_kij_with_vle,
+    retrieve_available_data_pure,
+    retrieve_available_data_binary,
+    retrieve_available_data_ternary,
     plot_3d_molecule,
     batch_inchi_to_smiles,
     batch_smiles_to_inchi,

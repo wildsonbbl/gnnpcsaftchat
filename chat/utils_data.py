@@ -344,8 +344,22 @@ def retrieve_st_pure_data(smiles: str) -> Optional[NDArray[float64]]:
 
 def retrieve_available_data_pure(
     smiles: str,
-) -> Dict[str, Optional[Union[List[float], int]]]:
-    "retrieve available pure data for smiles"
+) -> Dict[str, Optional[Union[List[str], str]]]:
+    """
+    Retrieve the available pure experimental data that can be used for plotting.
+
+    Returns a mapping with the following keys:
+      - density_data:
+          A list of "P (kPa) = <pressure>, <count> data points"
+          descriptions, or "0 data points".
+      - vapor_pressure_data:
+          A string containing the total number of vapor-pressure points.
+      - surface_tension_data:
+          A string containing the total number of surface-tension points.
+
+    Args:
+        smiles: Component SMILES string.
+    """
 
     rho_pure = pl.read_parquet(osp.join(application_path, "_data", "rho_pure.parquet"))
     vp_pure = pl.read_parquet(osp.join(application_path, "_data", "vp_pure.parquet"))
@@ -380,7 +394,15 @@ def retrieve_available_data_pure(
     else:
         st_range = 0
 
-    return {"rho_range": rho_range, "vp_range": vp_range, "st_range": st_range}
+    return {
+        "density_data": (
+            [f"P (kPa) = {pkpa}, {count} data points" for pkpa, count in rho_range]
+            if rho_range
+            else "0 data points"
+        ),
+        "vapor_pressure_data": f"{vp_range} data points",
+        "surface_tension_data": f"{st_range} data points",
+    }
 
 
 def retrieve_rho_binary_data(
@@ -546,8 +568,27 @@ def retrieve_lle_binary_data(
 
 def retrieve_available_data_binary(
     smiles_list: list,
-) -> Dict[str, Optional[List[List[float]]]]:
-    "retrieve available binary data"
+) -> Dict[str, Union[List[str], str]]:
+    """
+    Retrieve the available binary experimental data that can be used for plotting.
+
+    Returns a mapping with these keys:
+      - density_px_data_b:
+          Density groups at fixed pressure and component-1 mole fraction
+          x_1.
+      - vle_x_data_b:
+          Bubble-point groups at fixed component-1 mole fraction x_1.
+      - lle_p_data_b:
+          LLE groups at fixed pressure.
+      - vle_p_data_b:
+          VLE groups at fixed pressure, containing T-x-y data.
+      - vle_t_data_b:
+          VLE groups at fixed temperature, containing P-x-y data.
+
+    Args:
+        smiles_list: Two component SMILES strings. The requested order is
+            preserved when reporting the composition of component 1.
+    """
 
     i1, i2 = smilestoinchi(smiles_list[0]), smilestoinchi(smiles_list[1])
 
@@ -557,18 +598,58 @@ def retrieve_available_data_binary(
     vle_data, vle_pxy_data = _build_binary_vle_data(i1, i2)
 
     return {
-        "rho_px_data_b": rho_data,
-        "vle_x_data_b": bubble_data,
-        "lle_p_data_b": lle_data,
-        "vle_p_data_b": vle_data,
-        "vle_t_data_b": vle_pxy_data,
+        "density_px_data_b": (
+            [
+                f"P (kPa) = {pkpa}, x_1 = {x1}, {count} data points"
+                for pkpa, x1, count in rho_data
+            ]
+            if rho_data is not None
+            else "0 data points"
+        ),
+        "vle_x_data_b": (
+            [f"x_1 = {x}, {count} data points" for x, count in bubble_data]
+            if bubble_data
+            else "0 data points"
+        ),
+        "lle_p_data_b": (
+            [f"P (kPa = {pkpa}, {count} data points" for pkpa, count in lle_data]
+            if lle_data
+            else "0 data points"
+        ),
+        "vle_p_data_b": (
+            [f"P (kPa) = {pkpa}, {count} data points" for pkpa, count in vle_data]
+            if vle_data
+            else "0 data points"
+        ),
+        "vle_t_data_b": (
+            [f"T (K) = {tk}, {count} data points" for tk, count in vle_pxy_data]
+            if vle_pxy_data
+            else "0 data points"
+        ),
     }
 
 
 def retrieve_available_data_ternary(
     smiles_list: list,
-) -> Dict[str, Optional[List[List[float]]]]:
-    "retrieve available ternary data"
+) -> Dict[str, Union[List[str], str]]:
+    """
+    Retrieve the available ternary experimental data that can be used for plotting.
+
+    Returns a mapping with these keys:
+      - rho_px_data_t:
+          Density groups at fixed pressure and fixed x_1/x_2.
+      - lle_pt_data_t:
+          LLE groups at fixed pressure and temperature.
+      - vle_pt_data_t:
+          VLE groups at fixed pressure and temperature.
+      - vle_tx_data_t:
+          VLE groups at fixed temperature and solvent ratio
+          x_2 / (x_2 + x_3).
+
+    Args:
+        smiles_list: Three component SMILES strings. Component fractions in
+            the descriptions are mapped to this input order.
+    """
 
     target_set = [
         smilestoinchi(smiles_list[0]),
@@ -581,10 +662,39 @@ def retrieve_available_data_ternary(
     vle_pt_data, vle_tx_data = _build_ternary_vle_data(target_set)
 
     return {
-        "rho_px_data_t": rho_data,
-        "lle_pt_data_t": lle_data,
-        "vle_pt_data_t": vle_pt_data,
-        "vle_tx_data_t": vle_tx_data,
+        "rho_px_data_t": (
+            [
+                f"P (kPa) = {pressure}, x_1 = {x1}, x_2 = {x2}, {count} data points"
+                for pressure, x1, x2, count in rho_data
+            ]
+            if rho_data
+            else "0 data points"
+        ),
+        "lle_pt_data_t": (
+            [
+                f"P (kPa) = {pressure}, T (K) = {temperature}, {count} data points"
+                for pressure, temperature, count in lle_data
+            ]
+            if lle_data
+            else "0 data points"
+        ),
+        "vle_pt_data_t": (
+            [
+                f"P (kPa) = {pressure}, T (K) = {temperature}, {count} data points"
+                for pressure, temperature, count in vle_pt_data
+            ]
+            if vle_pt_data
+            else "0 data points"
+        ),
+        "vle_tx_data_t": (
+            [
+                f"T (K) = {temperature}, solvent ratio = {solvent_ratio}, "
+                f"{count} data points"
+                for temperature, solvent_ratio, count in vle_tx_data
+            ]
+            if vle_tx_data
+            else "0 data points"
+        ),
     }
 
 
