@@ -31,9 +31,10 @@ from .utils_data import (
     retrieve_vle_binary_data,
     retrieve_vle_pxy_binary_data,
     retrieve_vle_ternary_data,
+    retrieve_vle_ternary_tx_fixed_data,
     retrieve_vp_pure_data,
 )
-from .utils_mix import mix_vle_pxy
+from .utils_mix import TernaryVleTxParams, mix_ternary_vle_tx_fixed, mix_vle_pxy
 
 PLOT_HTML_STORE: Dict[str, str] = {}
 PA_PER_KPA = 1000.0
@@ -708,7 +709,7 @@ def plot_binary_vle_pxy(
         smiles_list=smiles_list,
         kij_matrix=kij_matrix if kij_matrix else [[0.0, 0.0], [0.0, 0.0]],
         temperature=temperature,
-        npoints=500,
+        npoints=100,
     )
 
     plot_data = {
@@ -748,6 +749,84 @@ def plot_binary_vle_pxy(
         data=plot_data,
         html=html,
         message="Binary VLE P-x-y diagram generated successfully.",
+    )
+
+
+def plot_ternary_vle_pxy(
+    smiles_list: List[str],
+    temperature: float,
+    solvent_ratio: float,
+    kij_matrix: Optional[List[List[float]]] = None,
+):
+    """
+    When asked, use this tool to show the user a P-x-y VLE diagram for a ternary mixture
+    at fixed Temperature (K) and solvent ratio.
+
+    Solvent_ratio = x2 / (x2 + x3). The first component is scanned in composition.
+
+    Args:
+      smiles_list (List[str]): List with ternary SMILES [SMILES_1, SMILES_2, SMILES_3].
+      temperature (float): System Temperature (K).
+      solvent_ratio (float): Solvent_ratio = x2 / (x2 + x3).
+      kij_matrix (Optional[List[List[float]]]): A matrix of binary interaction parameters. Optional.
+
+    """
+    assert (
+        len(smiles_list) == 3
+    ), f"smiles_list should have 3 SMILES, got {len(smiles_list)} instead"
+
+    xs, bps, dps = mix_ternary_vle_tx_fixed(
+        TernaryVleTxParams(
+            smiles_list=smiles_list,
+            kij_matrix=(
+                kij_matrix
+                if kij_matrix
+                else [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+            ),
+            temperature=temperature,
+            solvent_ratio=solvent_ratio,
+            npoints=100,
+        )
+    )
+
+    plot_data = {
+        "bubble_points": bps,
+        "dew_points": dps,
+        "x1s": xs,
+    }
+    data = {
+        "GNN": [
+            xs,
+            bps,
+            dps,
+        ],
+        "legends": [
+            "GNN Bubble P.",
+            "GNN Dew P.",
+            "Exp. Bubble P. (ThermoML Archive**)",
+        ],
+        "TML": _experimental_plot_data(
+            retrieve_vle_ternary_tx_fixed_data(smiles_list, temperature, solvent_ratio),
+            y_scale=PA_PER_KPA,
+        ),
+    }
+    plot_id = f"t_vle_pxy_plot_{uuid.uuid4().hex}"
+    html = f"""
+    <div id="{plot_id}" alt="Ternary VLE P-x-y diagram"></div>
+    <script>
+    getplot(
+        {json.dumps(data)},
+        "x<sub>1</sub>, y<sub>1</sub>",
+        "Pressure (Pa)",
+        "VLE at T={temperature} K and x2/(x2+x3)={solvent_ratio}",
+        "{plot_id}");
+    </script>
+    """
+    return _make_plot_response(
+        plot_type="ternary_vle_pxy",
+        data=plot_data,
+        html=html,
+        message="Ternary VLE P-x-y diagram generated successfully.",
     )
 
 

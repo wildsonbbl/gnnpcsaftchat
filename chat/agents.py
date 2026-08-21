@@ -27,6 +27,7 @@ from .plot_utils import (
     plot_pure_surface_tension,
     plot_pure_vapor_pressure,
     plot_ternary_lle_or_vle,
+    plot_ternary_vle_pxy,
 )
 from .utils_data import (
     retrieve_available_data_binary,
@@ -56,6 +57,7 @@ all_tools = [
     plot_binary_vle_txy,
     plot_binary_vle_xy,
     plot_binary_vle_pxy,
+    plot_ternary_vle_pxy,
     plot_ternary_lle_or_vle,
     optimize_binary_kij_with_vle,
     retrieve_available_data_pure,
