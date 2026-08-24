@@ -545,8 +545,8 @@ def plot_ternary_lle_or_vle(
     npoints: int = 25,
 ):
     """
-    When asked, use this tool to show the user a LLE or VLE diagram for a ternary mixture
-    at temperature (K) and pressure (Pa).
+    When asked, use this tool to show the user a LLE or VLE ternary diagram
+    for a ternary mixture at fixed temperature (K) and pressure (Pa).
 
     Args:
       smiles_list (List[str]): List with ternary SMILES [SMILES_1, SMILES_2, SMILES_3].
