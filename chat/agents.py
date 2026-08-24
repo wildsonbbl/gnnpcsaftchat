@@ -10,15 +10,15 @@ from gnnepcsaft_mcp_server.utils import (
     batch_predict_pcsaft_parameters,
     batch_smiles_to_inchi,
 )
-from google.adk.agents import LlmAgent
-from google.adk.models.lite_llm import LiteLlm
-
-from .utils_data import (
+from gnnepcsaft_mcp_server.utils_data import (
     retrieve_available_data_binary,
     retrieve_available_data_pure,
     retrieve_available_data_ternary,
 )
-from .utils_kij import optimize_binary_kij_with_vle
+from gnnepcsaft_mcp_server.utils_kij import optimize_binary_kij_with_vle
+from google.adk.agents import LlmAgent
+from google.adk.models.lite_llm import LiteLlm
+
 from .utils_plot import (
     plot_3d_molecule,
     plot_binary_lle_txx,

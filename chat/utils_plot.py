@@ -14,8 +14,7 @@ from gnnepcsaft.pcsaft.pcsaft_feos import (
 )
 from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
 from gnnepcsaft_mcp_server.utils import predict_pcsaft_parameters
-
-from .utils_data import (
+from gnnepcsaft_mcp_server.utils_data import (
     retrieve_bubble_pressure_data,
     retrieve_lle_binary_data,
     retrieve_lle_ternary_data,
@@ -29,7 +28,7 @@ from .utils_data import (
     retrieve_vle_ternary_tx_fixed_data,
     retrieve_vp_pure_data,
 )
-from .utils_mix import (
+from gnnepcsaft_mcp_server.utils_mix import (
     MixDenParams,
     MixLLEParams,
     MixVpParams,
