@@ -184,7 +184,7 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
 
     """
 
-    st, temperatures = pure_surface_tension(smiles=smiles, min_temp=t_min)
+    temperatures, st = pure_surface_tension(smiles=smiles, min_temp=t_min)
     exp_data = retrieve_st_pure_data(smiles=smiles)
 
     plot_data = {"x": temperatures, "y": st}
