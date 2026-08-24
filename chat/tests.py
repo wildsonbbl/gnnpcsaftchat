@@ -11,13 +11,13 @@ from django.urls import reverse
 
 from .models import ChatSession
 from .utils_plot import (
-    _experimental_plot_data,
     plot_mix_density,
     plot_pure_density,
     plot_pure_surface_tension,
     plot_pure_vapor_pressure,
     pop_plot_html,
 )
+from .utils_plot.core import _experimental_plot_data
 
 
 class ViewsTestCase(TestCase):

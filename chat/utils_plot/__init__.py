@@ -1,6 +1,6 @@
 "helper for plotting"
 
-from .core import _experimental_plot_data, plot_3d_molecule, pop_plot_html
+from .core import plot_3d_molecule, pop_plot_html
 from .mix import (
     plot_binary_lle_txx,
     plot_binary_vle_pxy,
@@ -20,7 +20,6 @@ from .pure import (
 )
 
 __all__ = [
-    "_experimental_plot_data",
     "plot_3d_molecule",
     "pop_plot_html",
     "plot_binary_lle_txx",
