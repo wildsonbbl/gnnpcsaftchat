@@ -74,7 +74,7 @@ class PlotUtilsContractTest(TestCase):
             [[300.0, 310.0], [2500.0, 3000.0]],
         )
 
-    @patch("chat.utils_plot.retrieve_rho_pure_data")
+    @patch("chat.utils_plot.pure.retrieve_rho_pure_data")
     def test_pure_density_uses_kpa_for_experimental_lookup(self, mock_retrieve):
         """The pure-density lookup receives pressure converted from Pa to kPa."""
         mock_retrieve.return_value = np.array([[280.0, 900.0]])
@@ -84,7 +84,7 @@ class PlotUtilsContractTest(TestCase):
         mock_retrieve.assert_called_once_with(smiles="CC", pressure=101.325)
         self.assertIn('"TML": [[280.0], [900.0]]', self._plot_html(result))
 
-    @patch("chat.utils_plot.retrieve_vp_pure_data")
+    @patch("chat.utils_plot.pure.retrieve_vp_pure_data")
     def test_pure_vapor_pressure_converts_kpa_to_pa(self, mock_retrieve):
         """Experimental vapor pressure is rendered in Pa, not source kPa."""
         mock_retrieve.return_value = np.array([[300.0, 2.5]])
@@ -93,7 +93,7 @@ class PlotUtilsContractTest(TestCase):
 
         self.assertIn("[300.0], [2500.0]", self._plot_html(result))
 
-    @patch("chat.utils_plot.retrieve_st_pure_data")
+    @patch("chat.utils_plot.pure.retrieve_st_pure_data")
     def test_surface_tension_converts_n_per_m_to_mn_per_m(self, mock_retrieve):
         """Experimental surface tension is rendered in mN/m."""
         mock_retrieve.return_value = np.array([[300.0, 0.025]])
@@ -102,7 +102,7 @@ class PlotUtilsContractTest(TestCase):
 
         self.assertIn("[300.0], [25.0]", self._plot_html(result))
 
-    @patch("chat.utils_plot.retrieve_rho_binary_data")
+    @patch("chat.utils_plot.mix.retrieve_rho_binary_data")
     def test_mixture_density_keeps_experimental_density_units(self, mock_retrieve):
         """Experimental mixture density is already returned in mol/m3."""
         mock_retrieve.return_value = np.array([[280.0, 850.0]])
