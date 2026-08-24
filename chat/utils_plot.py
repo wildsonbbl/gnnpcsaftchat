@@ -5,15 +5,7 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-from gnnepcsaft.pcsaft.pcsaft_feos import (
-    phase_diagram_feos,
-    pure_den_feos,
-    pure_h_lv_feos,
-    pure_surface_tension_feos,
-    pure_vp_feos,
-)
 from gnnepcsaft_mcp_server.plot_utils import v3000_mol_block
-from gnnepcsaft_mcp_server.utils import predict_pcsaft_parameters
 from gnnepcsaft_mcp_server.utils_data import (
     retrieve_bubble_pressure_data,
     retrieve_lle_binary_data,
@@ -40,6 +32,13 @@ from gnnepcsaft_mcp_server.utils_mix import (
     mix_vle,
     mix_vle_pxy,
     mix_vp,
+)
+from gnnepcsaft_mcp_server.utils_pure import (
+    pure_den,
+    pure_h_lv,
+    pure_phase_diagram,
+    pure_surface_tension,
+    pure_vp,
 )
 
 PLOT_HTML_STORE: Dict[str, str] = {}
@@ -84,7 +83,9 @@ def pop_plot_html(plot_id: str) -> Optional[str]:
     return PLOT_HTML_STORE.pop(plot_id, None)
 
 
-def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
+def plot_pure_density(
+    smiles: str, t_min: float, t_max: float, pressure: float, npoints: int = 100
+):
     """
     When asked, use this tool to show the user a plot of density (mol/m³).
 
@@ -93,20 +94,22 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
       t_min (float): minimum temperature (K) to calculate density (mol/m³)
       t_max (float): maximun temperature (K) to calculate density (mol/m³)
       pressure (float): system pressure (Pa)
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
 
-    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = predict_pcsaft_parameters(smiles)
-
-    densities = [
-        pure_den_feos(parameters=parameters, state=[T, pressure]) for T in temperatures
-    ]
+    temperatures, densities = pure_den(
+        smiles=smiles,
+        min_temp=t_min,
+        max_temp=t_max,
+        pressure=pressure,
+        npoints=npoints,
+    )
     exp_data = retrieve_rho_pure_data(smiles=smiles, pressure=pressure / PA_PER_KPA)
 
-    plot_data = {"x": temperatures.tolist(), "y": densities}
+    plot_data = {"x": temperatures, "y": densities}
     data = {
-        "GNN": [temperatures.tolist(), densities],
+        "GNN": [temperatures, densities],
         "legends": [
             "GNN",
             "GNN",
@@ -134,7 +137,9 @@ def plot_pure_density(smiles: str, t_min: float, t_max: float, pressure: float):
     )
 
 
-def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
+def plot_pure_vapor_pressure(
+    smiles: str, t_min: float, t_max: float, npoints: int = 100
+):
     """
     When asked, use this tool to show the user a plot of vapor pressure (Pa).
 
@@ -142,20 +147,18 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
       smiles (str): SMILES of the molecule.
       t_min (float): minimum temperature (K) to calculate vapor pressure (Pa)
       t_max (float): maximun temperature (K) to calculate vapor pressure (Pa)
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
 
-    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = predict_pcsaft_parameters(smiles)
-
-    vapor_pressures = [
-        pure_vp_feos(parameters=parameters, state=[T]) for T in temperatures
-    ]
+    temperatures, vapor_pressures = pure_vp(
+        smiles=smiles, min_temp=t_min, max_temp=t_max, npoints=npoints
+    )
     exp_data = retrieve_vp_pure_data(smiles=smiles)
 
-    plot_data = {"x": temperatures.tolist(), "y": vapor_pressures}
+    plot_data = {"x": temperatures, "y": vapor_pressures}
     data = {
-        "GNN": [temperatures.tolist(), vapor_pressures],
+        "GNN": [temperatures, vapor_pressures],
         "legends": [
             "GNN",
             "GNN",
@@ -183,7 +186,7 @@ def plot_pure_vapor_pressure(smiles: str, t_min: float, t_max: float):
     )
 
 
-def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
+def plot_pure_h_lv(smiles: str, t_min: float, t_max: float, npoints: int = 100):
     """
     When asked, use this tool to show the user a plot of enthalpy of vaporization (kJ/mol).
 
@@ -191,17 +194,17 @@ def plot_pure_h_lv(smiles: str, t_min: float, t_max: float):
       smiles (str): SMILES of the molecule.
       t_min (float): minimum temperature (K) to calculate enthalpy of vaporization (kJ/mol)
       t_max (float): maximun temperature (K) to calculate enthalpy of vaporization (kJ/mol)
+      npoints (int): Number of data points to calculate. Default is 100 data points.
 
     """
 
-    temperatures = np.linspace(t_min, t_max, 20, dtype=np.float64)
-    parameters = predict_pcsaft_parameters(smiles)
+    temperatures, h_lv = pure_h_lv(
+        smiles=smiles, min_temp=t_min, max_temp=t_max, npoints=npoints
+    )
 
-    h_lv = [pure_h_lv_feos(parameters=parameters, state=[T]) for T in temperatures]
-
-    plot_data = {"x": temperatures.tolist(), "y": h_lv}
+    plot_data = {"x": temperatures, "y": h_lv}
     data = {
-        "GNN": [temperatures.tolist(), h_lv],
+        "GNN": [temperatures, h_lv],
         "legends": [
             "GNN",
             "GNN",
@@ -240,14 +243,12 @@ def plot_pure_surface_tension(smiles: str, t_min: float):
 
     """
 
-    parameters = predict_pcsaft_parameters(smiles)
-
-    st, temperatures = pure_surface_tension_feos(parameters=parameters, state=[t_min])
+    st, temperatures = pure_surface_tension(smiles=smiles, min_temp=t_min)
     exp_data = retrieve_st_pure_data(smiles=smiles)
 
-    plot_data = {"x": temperatures.tolist(), "y": st.tolist()}
+    plot_data = {"x": temperatures, "y": st}
     data = {
-        "GNN": [temperatures.tolist(), st.tolist()],
+        "GNN": [temperatures, st],
         "legends": [
             "GNN",
             "GNN",
@@ -287,21 +288,19 @@ def plot_pure_phase_diagram_t_rho_and_p_rho(smiles: str, t_min: float):
 
     """
 
-    parameters = predict_pcsaft_parameters(smiles)
-
-    output = phase_diagram_feos(parameters=parameters, state=[t_min])
+    output = pure_phase_diagram(smiles=smiles, min_temp=t_min)
 
     plot_data = {
-        "temperature": output["temperature"],
-        "pressure": output.get("pressure", output.get("pressure vapor", [])),
-        "density_liquid": output["density liquid"],
-        "density_vapor": output["density vapor"],
+        "temperature": output[0],
+        "pressure": output[1],
+        "density_liquid": output[2],
+        "density_vapor": output[3],
     }
     data_t_rho = {
         "GNN": [
-            output["temperature"],
-            output["density liquid"],
-            output["density vapor"],
+            output[0],
+            output[2],
+            output[3],
         ],
         "legends": [
             "GNN - Liquid",
@@ -312,9 +311,9 @@ def plot_pure_phase_diagram_t_rho_and_p_rho(smiles: str, t_min: float):
     }
     data_p_rho = {
         "GNN": [
-            output.get("pressure", output.get("pressure vapor", [])),
-            output["density liquid"],
-            output["density vapor"],
+            output[1],
+            output[2],
+            output[3],
         ],
         "legends": [
             "GNN - Liquid",

@@ -54,14 +54,7 @@ class PlotUtilsContractTest(TestCase):
             raise AssertionError("Plot HTML was not stored")
         return html
 
-    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={"mock": "params"})
-    @patch(
-        "chat.utils_plot.pure_den_feos",
-        side_effect=lambda parameters, state: float(state[0]) * 2.0,
-    )
-    def test_plot_pure_density_returns_agent_safe_payload(
-        self, _mock_pure_den_feos, _mock_predict
-    ):
+    def test_plot_pure_density_returns_agent_safe_payload(self):
         """Plot helpers should expose only plot metadata and success status."""
         result = plot_pure_density("CC", 280.0, 300.0, 101325.0)
 
@@ -82,11 +75,7 @@ class PlotUtilsContractTest(TestCase):
         )
 
     @patch("chat.utils_plot.retrieve_rho_pure_data")
-    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
-    @patch("chat.utils_plot.pure_den_feos", return_value=1000.0)
-    def test_pure_density_uses_kpa_for_experimental_lookup(
-        self, _mock_density, _mock_predict, mock_retrieve
-    ):
+    def test_pure_density_uses_kpa_for_experimental_lookup(self, mock_retrieve):
         """The pure-density lookup receives pressure converted from Pa to kPa."""
         mock_retrieve.return_value = np.array([[280.0, 900.0]])
 
@@ -96,11 +85,7 @@ class PlotUtilsContractTest(TestCase):
         self.assertIn('"TML": [[280.0], [900.0]]', self._plot_html(result))
 
     @patch("chat.utils_plot.retrieve_vp_pure_data")
-    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
-    @patch("chat.utils_plot.pure_vp_feos", return_value=2000.0)
-    def test_pure_vapor_pressure_converts_kpa_to_pa(
-        self, _mock_vapor_pressure, _mock_predict, mock_retrieve
-    ):
+    def test_pure_vapor_pressure_converts_kpa_to_pa(self, mock_retrieve):
         """Experimental vapor pressure is rendered in Pa, not source kPa."""
         mock_retrieve.return_value = np.array([[300.0, 2.5]])
 
@@ -109,14 +94,7 @@ class PlotUtilsContractTest(TestCase):
         self.assertIn("[300.0], [2500.0]", self._plot_html(result))
 
     @patch("chat.utils_plot.retrieve_st_pure_data")
-    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
-    @patch(
-        "chat.utils_plot.pure_surface_tension_feos",
-        return_value=(np.array([10.0]), np.array([300.0])),
-    )
-    def test_surface_tension_converts_n_per_m_to_mn_per_m(
-        self, _mock_surface_tension, _mock_predict, mock_retrieve
-    ):
+    def test_surface_tension_converts_n_per_m_to_mn_per_m(self, mock_retrieve):
         """Experimental surface tension is rendered in mN/m."""
         mock_retrieve.return_value = np.array([[300.0, 0.025]])
 
@@ -125,10 +103,7 @@ class PlotUtilsContractTest(TestCase):
         self.assertIn("[300.0], [25.0]", self._plot_html(result))
 
     @patch("chat.utils_plot.retrieve_rho_binary_data")
-    @patch("chat.utils_plot.predict_pcsaft_parameters", return_value={})
-    def test_mixture_density_keeps_experimental_density_units(
-        self, _mock_predict, mock_retrieve
-    ):
+    def test_mixture_density_keeps_experimental_density_units(self, mock_retrieve):
         """Experimental mixture density is already returned in mol/m3."""
         mock_retrieve.return_value = np.array([[280.0, 850.0]])
 
