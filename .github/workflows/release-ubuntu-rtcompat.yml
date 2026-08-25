@@ -42,7 +42,7 @@ jobs:
 
       - name: Build DEB
         run: |
-          xvfb-run -a bash ./release-workflow.sh --skip-upload
+          xvfb-run -a bash ./release-workflow.sh --skip-upload --rtcompat
 
       - name: Publish release asset
         uses: softprops/action-gh-release@v3

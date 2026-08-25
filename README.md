@@ -12,6 +12,20 @@ docker run -p 19771:8000 wildsonbbl/gnnpcsaftchat:latest
 
 Access the app at `http://localhost:19771` in your web browser.
 
+## CPU-compatible desktop build
+
+The standard desktop release requires AVX2 for `polars`. On older CPUs, build the runtime-compatible variant, which installs `polars[rtcompat]`:
+
+```powershell
+.\release-workflow.ps1 -Rtcompat
+```
+
+```bash
+./release-workflow.sh --rtcompat
+```
+
+The standard build detects CPUs without AVX2 before loading native dependencies and directs users to the latest release page for the compatible installer.
+
 Other implementations with GNNPCSAFT:
 
 - [GNNPCSAFT CLI](https://github.com/wildsonbbl/gnnepcsaftcli)

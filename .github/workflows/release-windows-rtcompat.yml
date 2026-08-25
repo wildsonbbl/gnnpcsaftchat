@@ -1,7 +1,6 @@
-name: Release Ubuntu DEB
+name: Release Windows MSI
 
 on:
-  workflow_dispatch:
   push:
     tags:
       - "v*.*.*"
@@ -11,12 +10,7 @@ permissions:
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-latest
-    env:
-      KIVY_NO_ARGS: "1"
-      KIVY_NO_CONSOLELOG: "1"
-      KIVY_AUDIO: "dummy"
-      SDL_VIDEODRIVER: "x11"
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -24,10 +18,16 @@ jobs:
         with:
           lfs: true
 
-      - name: Install system dependencies
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install WiX CLI
+        shell: pwsh
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgl1 libglib2.0-0 libsm6 libxrender1 libxext6 libegl1 libmtdev1 xvfb libnss3
+          dotnet tool install --global wix --version 7.*
+          echo "$env:USERPROFILE\.dotnet\tools" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -38,16 +38,18 @@ jobs:
       - name: Download datasets from HuggingFace
         run: |
           git clone https://huggingface.co/wildsonbbl/gnnepcsaft  hfdata
-          cp -R hfdata/_data ./chat
+          Copy-Item -Path .\hfdata\_data -Destination .\chat -Recurse -Force
 
-      - name: Build DEB
+      - name: Build MSI
+        id: build
+        shell: pwsh
         run: |
-          xvfb-run -a bash ./release-workflow.sh --skip-upload
+          ./release-workflow.ps1 -SkipUpload -Rtcompat
 
       - name: Publish release asset
         uses: softprops/action-gh-release@v3
         with:
-          files: app_pkg/dist/*.deb
+          files: installer/*.msi
           fail_on_unmatched_files: true
           generate_release_notes: true
           draft: true

@@ -45,7 +45,6 @@ jobs:
         shell: pwsh
         run: |
           ./release-workflow.ps1 -SkipUpload
-          echo "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
       - name: Publish release asset
         uses: softprops/action-gh-release@v3
@@ -54,4 +53,3 @@ jobs:
           fail_on_unmatched_files: true
           generate_release_notes: true
           draft: true
-          name: ${{ steps.build.outputs.version }}
