@@ -6,7 +6,6 @@ from PyInstaller.utils.hooks import copy_metadata
 datas = [
     ("./chat/templates", "./chat/templates"),
     ("./productionfiles", "./productionfiles"),
-    ("./chat/_data", "./chat/_data"),
 
 ]
 datas += copy_metadata("django-bootstrap-v5")

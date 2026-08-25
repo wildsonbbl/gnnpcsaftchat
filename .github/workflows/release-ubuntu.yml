@@ -35,11 +35,6 @@ jobs:
           python-version: "3.13"
           activate-environment: true
 
-      - name: Download datasets from HuggingFace
-        run: |
-          git clone https://huggingface.co/wildsonbbl/gnnepcsaft  hfdata
-          cp -R hfdata/_data ./chat
-
       - name: Build DEB
         run: |
           xvfb-run -a bash ./release-workflow.sh --skip-upload
