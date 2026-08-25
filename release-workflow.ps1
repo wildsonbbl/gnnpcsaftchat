@@ -1,5 +1,6 @@
 param(
-	[switch]$SkipUpload
+	[switch]$SkipUpload,
+	[switch]$Rtcompat
 )
 
 $versionFile = Join-Path $PSScriptRoot 'app/_version.py'
@@ -13,10 +14,14 @@ if (-not $versionNumber) {
 
 $version = "v$versionNumber"
 $platform='windows'
-$installerName = "gnnpcsaftchat-$version-$platform.msi"
+$buildSuffix = if ($Rtcompat) { '-rtcompat' } else { '' }
+$installerName = "gnnpcsaftchat-$version$buildSuffix-$platform.msi"
 
 ## create package
 uv pip install -r requirements.txt
+if ($Rtcompat) {
+	uv pip install 'polars[rtcompat]'
+}
 uv run python manage.py collectstatic --no-input
 uv run python manage.py migrate --no-input
 uv run pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean ./gnnpcsaftchat.spec
