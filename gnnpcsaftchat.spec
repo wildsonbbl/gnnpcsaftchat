@@ -1,4 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
+import os
+
 from PyInstaller.utils.hooks import copy_metadata
 
 datas = [
@@ -8,6 +10,9 @@ datas = [
 
 ]
 datas += copy_metadata("django-bootstrap-v5")
+runtime_hooks = []
+if os.environ.get("GNNPCSAFTCHAT_RTCOMPAT"):
+    runtime_hooks.append("./hooks/runtime-rtcompat.py")
 
 
 a = Analysis(
@@ -18,7 +23,7 @@ a = Analysis(
     hiddenimports=["tiktoken_ext.openai_public", "tiktoken_ext", "linkify-it-py"],
     hookspath=["./hooks"],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=runtime_hooks,
     excludes=[],
     noarchive=False,
     optimize=0,

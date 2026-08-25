@@ -20,11 +20,17 @@ $installerName = "gnnpcsaftchat-$version$buildSuffix-$platform.msi"
 ## create package
 uv pip install -r requirements.txt
 if ($Rtcompat) {
-	uv pip install 'polars[rtcompat]'
+	uv pip install --reinstall 'polars[rtcompat]'
 }
 uv run python manage.py collectstatic --no-input
 uv run python manage.py migrate --no-input
+if ($Rtcompat) {
+	$env:GNNPCSAFTCHAT_RTCOMPAT = '1'
+} else {
+	Remove-Item Env:GNNPCSAFTCHAT_RTCOMPAT -ErrorAction SilentlyContinue
+}
 uv run pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean ./gnnpcsaftchat.spec
+Remove-Item Env:GNNPCSAFTCHAT_RTCOMPAT -ErrorAction SilentlyContinue
 
 $distDir = Join-Path $PSScriptRoot 'app_pkg/dist/gnnpcsaftchat'
 if (-not (Test-Path $distDir)) {

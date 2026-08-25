@@ -37,12 +37,18 @@ fi
 ## create package
 uv pip install -r requirements.txt
 if [ "$rtcompat" = true ]; then
-	uv pip install 'polars[rtcompat]'
+	uv pip install --reinstall 'polars[rtcompat]'
 fi
 uv pip install pywebview[qt]
 uv run python manage.py collectstatic --no-input
 uv run python manage.py migrate --no-input
+if [ "$rtcompat" = true ]; then
+	export GNNPCSAFTCHAT_RTCOMPAT=1
+else
+	unset GNNPCSAFTCHAT_RTCOMPAT 2>/dev/null || true
+fi
 uv run pyinstaller --distpath ./app_pkg/dist --workpath ./app_pkg/build --noconfirm --clean ./gnnpcsaftchat.spec
+unset GNNPCSAFTCHAT_RTCOMPAT
 
 dist_dir="$script_dir/app_pkg/dist/gnnpcsaftchat"
 pkg_root="$script_dir/app_pkg/dist/deb_pkg"

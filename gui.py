@@ -24,7 +24,6 @@ import app.asgi
 import app.wsgi
 from app import _version
 from app import settings as app_settings
-from app.cpu_compat import show_compatibility_warning, supports_avx2
 from chat import logger
 
 webview.settings["OPEN_EXTERNAL_LINKS_IN_BROWSER"] = False
@@ -137,10 +136,6 @@ def check_chat_db():
 
 def start_app():
     """Bootstrap migrations, launch the local server, and open the desktop window."""
-    if not supports_avx2():
-        show_compatibility_warning()
-        return
-
     port = _find_free_port()
 
     ensure_db_migrated()
