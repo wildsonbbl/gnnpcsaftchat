@@ -133,7 +133,7 @@ function updateChatLog() {
     Array.from(scripts).forEach((oldScript) => {
       const newScript = document.createElement("script");
       Array.from(oldScript.attributes).forEach((attr) =>
-        newScript.setAttribute(attr.name, attr.value)
+        newScript.setAttribute(attr.name, attr.value),
       );
       newScript.textContent = oldScript.textContent;
       oldScript.parentNode.replaceChild(newScript, oldScript);
@@ -245,7 +245,7 @@ function populateToolsList(tools) {
       JSON.stringify({
         action: "change_tools",
         tools: selectedTools,
-      })
+      }),
     );
   };
   li.appendChild(confirmBtn);
@@ -260,7 +260,7 @@ function populateToolsList(tools) {
     event.stopPropagation();
     var checkboxes = toolsList.querySelectorAll("input[type='checkbox']");
     var allChecked = Array.from(checkboxes).every(
-      (checkbox) => checkbox.checked
+      (checkbox) => checkbox.checked,
     );
     checkboxes.forEach((checkbox) => {
       checkbox.checked = !allChecked;
@@ -334,11 +334,10 @@ function showToolInfo(toolName) {
   };
 
   // Define o conteúdo do modal
-  document.getElementById(
-    "tool-info-body"
-  ).innerHTML = `<strong>${toolName}</strong><br>${
-    toolDescriptions[toolName] || "No description available."
-  }`;
+  document.getElementById("tool-info-body").innerHTML =
+    `<strong>${toolName}</strong><br>${
+      toolDescriptions[toolName] || "No description available."
+    }`;
 }
 
 // Simple toast notification function
@@ -414,13 +413,13 @@ function populateMcpActivationDropdown(serverNames) {
   confirmBtn.onclick = function () {
     showToast(
       `Activating ${selectedMcpServers.length} MCP server(s)...`,
-      "info"
+      "info",
     );
     chatSocket.send(
       JSON.stringify({
         action: "activate_mcp",
         server_names_list: selectedMcpServers,
-      })
+      }),
     );
   };
 
@@ -438,7 +437,7 @@ function populateMcpActivationDropdown(serverNames) {
       event.stopPropagation();
       const checkboxes = mcpList.querySelectorAll("input[type='checkbox']");
       var allChecked = Array.from(checkboxes).every(
-        (checkbox) => checkbox.checked
+        (checkbox) => checkbox.checked,
       );
       checkboxes.forEach((checkbox) => {
         checkbox.checked = !allChecked;
@@ -448,7 +447,7 @@ function populateMcpActivationDropdown(serverNames) {
           }
         } else {
           selectedMcpServers = selectedMcpServers.filter(
-            (t) => t !== checkbox.value
+            (t) => t !== checkbox.value,
           );
         }
       });
@@ -482,7 +481,7 @@ function populateMcpActivationDropdown(serverNames) {
           }
         } else {
           selectedMcpServers = selectedMcpServers.filter(
-            (s) => s !== serverName
+            (s) => s !== serverName,
           );
         }
       };
