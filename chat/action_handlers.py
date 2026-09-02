@@ -279,7 +279,9 @@ class ChatConsumerHandleActions(ChatConsumerMessagingOperations):
         """Handles request to get MCP server configuration content."""
         content = ""
         error_message = None
-        mcp_server_names = await self._get_mcp_server_names_from_config()
+        mcp_server_names, _mcp_server_config, _error_message = (
+            await self._get_mcp_server_names_from_config()
+        )
         try:
             with open(settings.MCP_SERVER_CONFIG, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -336,7 +338,9 @@ class ChatConsumerHandleActions(ChatConsumerMessagingOperations):
             logger.info(
                 "MCP configuration file updated: %s", settings.MCP_SERVER_CONFIG
             )
-            mcp_server_names_after_save = await self._get_mcp_server_names_from_config()
+            mcp_server_names_after_save, _mcp_server_config, _error_message = (
+                await self._get_mcp_server_names_from_config()
+            )
             await self.send(
                 text_data=json.dumps(
                     {

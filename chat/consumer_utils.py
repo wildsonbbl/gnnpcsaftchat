@@ -81,9 +81,13 @@ class CurrentChatSessionConsumer(AsyncWebsocketConsumer):
     gemini_models = GEMINI_MODELS.copy()
     mcp_tool_sets = []
 
-    async def _get_mcp_server_names_from_config(self) -> List[str]:
+    async def _get_mcp_server_names_from_config(
+        self,
+    ) -> Tuple[List[str], Dict[str, Dict[str, Any]], Optional[str]]:
         """Reads MCP server names from the configuration file."""
         mcp_server_names = []
+        mcp_config = {}
+        error_message = None
         try:
             with open(settings.MCP_SERVER_CONFIG, "r", encoding="utf-8") as f:
                 content = f.read()
@@ -91,16 +95,21 @@ class CurrentChatSessionConsumer(AsyncWebsocketConsumer):
             if isinstance(mcp_config.get("mcpServers"), dict):
                 mcp_server_names = list(mcp_config["mcpServers"].keys())
         except FileNotFoundError:
-            logger.warning(
-                "MCP configuration file not found when trying to read server names."
+            error_message = "MCP configuration file not found, configure file first."
+            logger.error(error_message)
+        except json.JSONDecodeError as e:
+            error_message = (
+                f"Error decoding JSON from MCP configuration"
+                f" file: {settings.MCP_SERVER_CONFIG}. Error: {e}"
             )
-        except json.JSONDecodeError:
-            logger.warning(
-                "MCP config file is not valid JSON. Cannot parse server names."
-            )
+            logger.error(error_message)
         except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Error reading MCP configuration file for server names: %s", e)
-        return mcp_server_names
+            error_message = (
+                f"Error reading MCP configuration"
+                f" file: {settings.MCP_SERVER_CONFIG}. Error: {e}"
+            )
+            logger.error(error_message)
+        return mcp_server_names, mcp_config, error_message
 
 
 class CurrentChatSessionConsumerUtils(CurrentChatSessionConsumer):
@@ -113,7 +122,9 @@ class CurrentChatSessionConsumerUtils(CurrentChatSessionConsumer):
         "load session data"
         await self.activate_mcp_server(servers_to_process=session.selected_mcp_servers)
         current_tool_map, valid_selected_tools = await self.start_agent_session(session)
-        mcp_server_names = await self._get_mcp_server_names_from_config()
+        mcp_server_names, _mcp_server_config, _error_message = (
+            await self._get_mcp_server_names_from_config()
+        )
 
         await self.send(
             text_data=json.dumps(
@@ -220,26 +231,10 @@ class CurrentChatSessionConsumerUtils(CurrentChatSessionConsumer):
             logger.debug("Closing MCP tool set: %s", mcp_tool_set)
             await mcp_tool_set.close()
         self.mcp_tool_sets = []
-        mcp_server_config: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
-        try:
-            with open(settings.MCP_SERVER_CONFIG, "r", encoding="utf-8") as config_file:
-                mcp_server_config = json.load(config_file)
-        except FileNotFoundError:
-            error_message = "MCP configuration file not found, config file first."
-            logger.error(error_message)
-        except json.JSONDecodeError as e:
-            error_message = (
-                f"Error decoding JSON from MCP configuration"
-                f" file: {settings.MCP_SERVER_CONFIG}. Error: {e}"
-            )
-            logger.error(error_message)
-        except Exception as e:  # pylint: disable=broad-exception-caught
-            error_message = (
-                f"Error reading MCP configuration"
-                f" file: {settings.MCP_SERVER_CONFIG}. Error: {e}"
-            )
-            logger.error(error_message)
+        _mcp_server_names, mcp_server_config, error_message = (
+            await self._get_mcp_server_names_from_config()
+        )
 
         if not error_message and "mcpServers" in mcp_server_config:
             logger.debug(mcp_server_config)
