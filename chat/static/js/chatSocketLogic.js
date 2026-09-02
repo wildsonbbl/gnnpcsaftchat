@@ -7,7 +7,7 @@ function setupChatSocketHandlers() {
       chatSocket.send(
         JSON.stringify({
           action: "get_sessions",
-        })
+        }),
       );
     }, 500); // Small delay to ensure connection is fully established
   };
@@ -56,7 +56,7 @@ function handleActionMessage(data) {
       if (data.mcp_config_path) {
         mcpConfigPath = data.mcp_config_path;
         const mcpConfigFilePathDisplay = document.getElementById(
-          "mcp-config-file-path"
+          "mcp-config-file-path",
         );
         if (mcpConfigFilePathDisplay) {
           mcpConfigFilePathDisplay.textContent = mcpConfigPath;
@@ -119,7 +119,7 @@ function handleActionMessage(data) {
     case "ollama_offline": // New case
       showToast(
         "Ollama is offline. Please start Ollama on http://localhost:11434/ and try again.",
-        "error"
+        "error",
       );
       break;
     case "tools_changed":
@@ -155,12 +155,8 @@ function handleActionMessage(data) {
       if (data.activated_tools && data.activated_tools.length > 0) {
         showToast(
           `MCP Servers activated. New tools available: ${data.activated_tools.join(
-            ", "
-          )}`
-        );
-        showToast(
-          "To terminate MCP servers, either deselect all and click activate or click any menu button (apart from AI Chat)",
-          "info"
+            ", ",
+          )}`,
         );
       } else {
         showToast("MCP Servers processed. No new tools were activated.");
@@ -185,14 +181,14 @@ function handleActionMessage(data) {
     case "session_created":
       // Close the modal
       var modal = bootstrap.Modal.getInstance(
-        document.getElementById("newSessionModal")
+        document.getElementById("newSessionModal"),
       );
       if (modal) modal.hide();
       // Atualiza a lista de sessões
       chatSocket.send(
         JSON.stringify({
           action: "get_sessions",
-        })
+        }),
       );
       break;
     case "load_messages":
@@ -209,11 +205,11 @@ function handleActionMessage(data) {
       chatSocket.send(
         JSON.stringify({
           action: "get_sessions",
-        })
+        }),
       );
       // Close the modal
       var modal = bootstrap.Modal.getInstance(
-        document.getElementById("renameSessionModal")
+        document.getElementById("renameSessionModal"),
       );
       if (modal) modal.hide();
       break;
@@ -241,7 +237,7 @@ function handleActionMessage(data) {
 
         // Close the modal
         var modal = bootstrap.Modal.getInstance(
-          document.getElementById("deleteSessionModal")
+          document.getElementById("deleteSessionModal"),
         );
         if (modal) modal.hide();
 
@@ -253,7 +249,7 @@ function handleActionMessage(data) {
       break;
     case "mcp_config_content":
       const mcpConfigContentInput = document.getElementById(
-        "mcp-config-content-input"
+        "mcp-config-content-input",
       );
       const mcpConfigError = document.getElementById("mcp-config-error");
       mcpConfigError.classList.add("d-none");
@@ -280,7 +276,7 @@ function handleActionMessage(data) {
       if (data.success) {
         showToast("MCP configuration saved successfully.");
         var modal = bootstrap.Modal.getInstance(
-          document.getElementById("mcpConfigModal")
+          document.getElementById("mcpConfigModal"),
         );
         if (modal) modal.hide();
         // Populate MCP activation dropdown with new server names if provided
@@ -299,7 +295,7 @@ function handleActionMessage(data) {
     case "api_key_required":
       showToast(
         `Google API Key is required for the current model (${data.model_name}). Please set the GOOGLE_API_KEY or GEMINI_API_KEY environment variable.`,
-        "error"
+        "error",
       );
       break;
   }
@@ -322,6 +318,6 @@ function changeModel(modelName) {
       action: "change_model",
       model_name: modelName,
       tools: selectedTools,
-    })
+    }),
   );
 }
