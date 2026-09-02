@@ -13,6 +13,7 @@ from django.conf import settings
 from google.adk.agents.run_config import RunConfig
 from google.adk.runners import Runner
 from google.adk.sessions.session import Session
+from google.adk.tools.base_tool import BaseTool
 from google.adk.tools.mcp_tool.mcp_session_manager import (
     SseConnectionParams,
     StdioConnectionParams,
@@ -70,7 +71,7 @@ class CurrentChatSessionConsumer(AsyncWebsocketConsumer):
     runner: Runner
     run_config = RunConfig(response_modalities=[Modality.TEXT])
     agent_task = None
-    mcp_tools: List[Any] = []
+    mcp_tools: List[BaseTool] = []
     original_tools: List[Any] = all_tools
     tool_descriptions: Dict[str, str] = {
         t.__name__: docstring_to_html(t.__doc__) or "No description available"
@@ -198,14 +199,14 @@ class CurrentChatSessionConsumerUtils(CurrentChatSessionConsumer):
     ):
         "get mcp toolset"
         command, args, env, url, headers = parameters
-        if command and args:
+        if command and args is not None:
             connection_params = StdioConnectionParams(
                 server_params=StdioServerParameters(command=command, args=args, env=env)
             )
         elif url:
             connection_params = SseConnectionParams(url=url, headers=headers)
         else:
-            return []
+            return None
         mcp_tool_set = MCPToolset(connection_params=connection_params)
         self.mcp_tool_sets.append(mcp_tool_set)
         return await mcp_tool_set.get_tools()
@@ -262,10 +263,15 @@ class CurrentChatSessionConsumerUtils(CurrentChatSessionConsumer):
 
                 try:
                     new_tools = await self.get_mcp(parameters=parameters)
+                    if new_tools is None:
+                        raise Warning(
+                            "MCP tools were not found. Check if MCP config is correct."
+                        )
                     self.mcp_tools.extend(new_tools)
                     activated_tool_names.extend([t.name for t in new_tools])
                     for t in new_tools:
                         self.tool_descriptions[t.name] = t.description
+
                     logger.info(
                         "Activated MCP tools from server '%s': %s",
                         mcpserver_name,
