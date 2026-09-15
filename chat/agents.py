@@ -15,7 +15,10 @@ from gnnepcsaft_mcp_server.utils_data import (
     retrieve_available_data_pure,
     retrieve_available_data_ternary,
 )
-from gnnepcsaft_mcp_server.utils_kij import optimize_binary_kij_with_vle
+from gnnepcsaft_mcp_server.utils_kij import (
+    optimize_binary_kij_with_lle,
+    optimize_binary_kij_with_vle,
+)
 from google.adk.agents import LlmAgent
 from google.adk.models.lite_llm import LiteLlm
 
@@ -60,6 +63,7 @@ all_tools = [
     plot_ternary_vle_pxy,
     plot_ternary_lle_or_vle,
     optimize_binary_kij_with_vle,
+    optimize_binary_kij_with_lle,
     retrieve_available_data_pure,
     retrieve_available_data_binary,
     retrieve_available_data_ternary,
