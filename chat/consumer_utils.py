@@ -266,7 +266,9 @@ class CurrentChatSessionConsumerUtils(CurrentChatSessionConsumer):
                     self.mcp_tools.extend(new_tools)
                     activated_tool_names.extend([t.name for t in new_tools])
                     for t in new_tools:
-                        self.tool_descriptions[t.name] = t.description
+                        self.tool_descriptions[t.name] = docstring_to_html(
+                            t.description
+                        )
 
                     logger.info(
                         "Activated MCP tools from server '%s': %s",
