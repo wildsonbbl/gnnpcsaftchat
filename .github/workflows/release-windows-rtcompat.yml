@@ -46,5 +46,5 @@ jobs:
         with:
           files: installer/*.msi
           fail_on_unmatched_files: true
-          generate_release_notes: true
+          generate_release_notes: false
           draft: true
