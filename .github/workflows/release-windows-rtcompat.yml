@@ -1,4 +1,4 @@
-name: Release Windows MSI
+name: Release Windows MSI rt compat
 
 on:
   push:

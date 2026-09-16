@@ -1,4 +1,4 @@
-name: Release Ubuntu DEB
+name: Release Ubuntu DEB rt compat
 
 on:
   workflow_dispatch:
